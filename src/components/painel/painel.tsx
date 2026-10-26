@@ -6,13 +6,13 @@ import {
   formatarNumero,
   progressoMeta,
 } from "@/lib/comissao";
-import { dataBR, diaDaSemana, diasNoMes, hojeSP, mesAtualSP } from "@/lib/datas";
+import { dataBR, diaDaSemana, diasNoMes, hojeSP, mesAtualSP, somarDias } from "@/lib/datas";
 import type { Destaque, LojaRanking, Painel, VendedorRanking } from "@/lib/painel.functions";
 import { cn } from "@/lib/utils";
 
 export function iniciais(nome: string) {
   const partes = nome.split(" ").filter((p) => p.length > 2 || /^[A-Z]/.test(p));
-  return ((partes[0]?.[0] ?? "") + (partes.length > 1 ? partes[partes.length - 1][0] : "")).toUpperCase();
+  return ((partes[0]?.[0] ?? "") + (partes.length > 1 ? (partes[partes.length - 1]?.[0] ?? "") : "")).toUpperCase();
 }
 
 const MEDALHA = [
@@ -20,6 +20,10 @@ const MEDALHA = [
   { anel: "border-silver text-silver", fundo: "bg-silver", label: "2º" },
   { anel: "border-bronze text-bronze", fundo: "bg-bronze", label: "3º" },
 ];
+
+function corPosicao(i: number) {
+  return ["text-gold", "text-silver", "text-bronze"][i] ?? "text-muted-foreground";
+}
 
 export function MetaCard({ painel }: { painel: Painel }) {
   const mes = painel.mes.slice(0, 7);
@@ -112,8 +116,7 @@ export function MetaCard({ painel }: { painel: Painel }) {
 
 function rotuloDia(iso: string) {
   const hoje = hojeSP();
-  const [a, m, d] = hoje.split("-").map(Number);
-  const ontem = new Date(Date.UTC(a, m - 1, d - 1)).toISOString().slice(0, 10);
+  const ontem = somarDias(hoje, -1);
   if (iso === ontem) return `Ontem · ${dataBR(iso)}`;
   if (iso === hoje) return `Hoje · ${dataBR(iso)}`;
   return `${diaDaSemana(iso)} · ${dataBR(iso)}`;
@@ -178,8 +181,8 @@ export function Podio({ vendedores }: { vendedores: VendedorRanking[] }) {
       ) : (
         <div className="mt-8 grid grid-cols-3 items-end gap-3 md:gap-6">
           {ordem.map((i) => {
-            const v = top[i];
-            const med = MEDALHA[i];
+            const v = top[i]!;
+            const med = MEDALHA[i]!;
             return (
               <div
                 key={v.vendedor}
@@ -214,7 +217,7 @@ export function Podio({ vendedores }: { vendedores: VendedorRanking[] }) {
                   <span
                     className={cn(
                       "font-display text-3xl font-black md:text-5xl",
-                      i === 0 ? "text-accent-foreground" : med.anel.split(" ")[1],
+                      i === 0 ? "text-accent-foreground" : corPosicao(i),
                     )}
                   >
                     {med.label}
@@ -256,7 +259,7 @@ export function RankingVendedores({ vendedores }: { vendedores: VendedorRanking[
               <span
                 className={cn(
                   "font-display text-lg font-extrabold",
-                  i < 3 ? MEDALHA[i].anel.split(" ")[1] : "text-muted-foreground",
+                  corPosicao(i),
                 )}
               >
                 {i + 1}
@@ -308,7 +311,7 @@ export function RankingLojas({ lojas }: { lojas: LojaRanking[] }) {
                   <span
                     className={cn(
                       "mr-2 font-display font-extrabold",
-                      i < 3 ? MEDALHA[i].anel.split(" ")[1] : "text-muted-foreground",
+                      corPosicao(i),
                     )}
                   >
                     {i + 1}
