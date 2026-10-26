@@ -22,7 +22,7 @@ export type Painel = {
 const entrada = z.object({ mes: z.string().regex(/^\d{4}-\d{2}$/).optional() });
 
 export const getPainel = createServerFn({ method: "GET" })
-  .inputValidator((input: { mes?: string }) => entrada.parse(input))
+  .inputValidator((input: { mes?: string | undefined }) => entrada.parse(input))
   .handler(async ({ data }) => {
     const url = process.env["SUPABASE_URL"]!;
     const key = process.env["SUPABASE_PUBLISHABLE_KEY"]!;

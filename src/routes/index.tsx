@@ -13,10 +13,10 @@ import { painelQuery } from "@/lib/painel.functions";
 import { dataBR, mesAtualSP, nomeMes, somarMes } from "@/lib/datas";
 
 export const Route = createFileRoute("/")({
-  validateSearch: (search: Record<string, unknown>): { mes?: string } => ({
-    mes:
-      typeof search.mes === "string" && /^\d{4}-\d{2}$/.test(search.mes) ? search.mes : undefined,
-  }),
+  validateSearch: (search: Record<string, unknown>): { mes?: string | undefined } => {
+    const mes = search["mes"];
+    return { mes: typeof mes === "string" && /^\d{4}-\d{2}$/.test(mes) ? mes : undefined };
+  },
   loaderDeps: ({ search }) => ({ mes: search.mes }),
   loader: ({ context, deps }) => context.queryClient.ensureQueryData(painelQuery(deps.mes)),
   head: () => ({
@@ -90,7 +90,7 @@ function Index() {
       <div className="mt-10 md:mt-14">
         <h1 className="font-display text-3xl font-black leading-[1.05] md:text-6xl">
           Quem está <span className="text-fire">pegando fogo</span>
-          <br className="hidden md:block" /> em {nomeMes(mes).split(" ")[0].toLowerCase()}?
+          <br className="hidden md:block" /> em {(nomeMes(mes).split(" ")[0] ?? "").toLowerCase()}?
         </h1>
         {painel.ultima_data && (
           <p className="mt-3 text-sm text-muted-foreground">

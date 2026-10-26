@@ -123,7 +123,9 @@ function Importar() {
       const buf = await file.arrayBuffer();
       const ehTexto = /\.(csv|txt)$/i.test(file.name);
       const wb = XLSX.read(buf, { type: "array", raw: ehTexto });
-      const ws = wb.Sheets[wb.SheetNames[0]];
+      const aba = wb.SheetNames[0];
+      const ws = aba ? wb.Sheets[aba] : undefined;
+      if (!ws) throw new Error("planilha vazia");
       const linhas = XLSX.utils.sheet_to_json<unknown[]>(ws, { header: 1, raw: true, defval: null });
       setResultado(lerLinhasPlanilha(linhas, data));
     } catch {

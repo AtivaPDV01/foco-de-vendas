@@ -72,11 +72,12 @@ export function lerData(valor: unknown): string | null {
   }
   const s = String(valor).trim();
   let m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
-  if (m) return iso(+m[1], +m[2], +m[3]);
+  if (m) return iso(Number(m[1]), Number(m[2]), Number(m[3]));
   m = s.match(/^(\d{1,2})[/.-](\d{1,2})[/.-](\d{2}|\d{4})$/);
   if (m) {
-    const ano = m[3].length === 2 ? 2000 + +m[3] : +m[3];
-    return iso(ano, +m[2], +m[1]);
+    const anoTxt = m[3] ?? "";
+    const ano = anoTxt.length === 2 ? 2000 + Number(anoTxt) : Number(anoTxt);
+    return iso(ano, Number(m[2]), Number(m[1]));
   }
   if (/^\d+(\.\d+)?$/.test(s)) return lerData(Number(s));
   return null;
@@ -117,7 +118,7 @@ export function lerLinhasPlanilha(linhas: unknown[][], dataPadrao: string): Resu
   }
 
   const colunas: Partial<Record<Campo, number>> = {};
-  linhas[idxCabecalho].forEach((c, i) => {
+  (linhas[idxCabecalho] ?? []).forEach((c, i) => {
     const campo = identificarCampo(c);
     if (campo && colunas[campo] === undefined) colunas[campo] = i;
   });
