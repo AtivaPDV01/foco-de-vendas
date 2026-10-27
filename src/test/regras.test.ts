@@ -12,6 +12,18 @@ describe("comissões", () => {
     expect(comissaoLoja(1)).toBe(0.05);
     expect(comissaoLoja(250)).toBe(12.5);
   });
+
+  it("item de campanha paga R$ 0,10 ao vendedor", () => {
+    // 6 normais x 0,20 + 4 de campanha x 0,10
+    expect(comissaoVendedor(10, 4)).toBe(1.6);
+    expect(comissaoVendedor(3, 3)).toBe(0.3);
+  });
+
+  it("item de campanha paga metade (R$ 0,025) à loja", () => {
+    // 6 normais x 0,05 + 4 de campanha x 0,025
+    expect(comissaoLoja(10, 4)).toBe(0.4);
+    expect(comissaoLoja(40, 40)).toBe(1);
+  });
 });
 
 describe("meta em quantidade", () => {
@@ -45,8 +57,24 @@ describe("leitura da planilha", () => {
       "2026-10-26",
     );
     expect(r.vendas).toEqual([
-      { data: "2026-10-26", vendedor: "Maria da Silva", loja: "Loja Centro", quantidade: 5 },
+      { data: "2026-10-26", vendedor: "Maria da Silva", loja: "Loja Centro", quantidade: 5, quantidade_campanha: 0 },
     ]);
     expect(r.erros).toHaveLength(1);
+  });
+
+  it("soma as colunas de R$ 0,20 e R$ 0,10 e guarda quantas são de campanha", () => {
+    const r = lerLinhasPlanilha(
+      [
+        ["Data", "Vendedor", "Loja", "Quantidade R$ 0,20", "Quantidade R$ 0,10"],
+        ["26/10/2026", "Ana", "Loja Centro", 5, 3],
+        ["26/10/2026", "Bia", "Loja Centro", "", 2],
+      ],
+      "2026-10-01",
+    );
+    expect(r.erros).toEqual([]);
+    expect(r.vendas).toEqual([
+      { data: "2026-10-26", vendedor: "Ana", loja: "Loja Centro", quantidade: 8, quantidade_campanha: 3 },
+      { data: "2026-10-26", vendedor: "Bia", loja: "Loja Centro", quantidade: 2, quantidade_campanha: 2 },
+    ]);
   });
 });

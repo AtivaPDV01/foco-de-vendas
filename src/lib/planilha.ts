@@ -108,6 +108,7 @@ export function lerQuantidade(valor: unknown): number | null {
 /**
  * Converte as linhas de uma planilha (primeira aba, como matriz) em vendas.
  * A coluna de data é opcional: sem ela, usa `dataPadrao`.
+ * Aceita uma coluna de quantidade normal (R$ 0,20) e/ou uma de campanha (R$ 0,10).
  */
 export function lerLinhasPlanilha(linhas: unknown[][], dataPadrao: string): ResultadoPlanilha {
   const erros: string[] = [];
@@ -115,7 +116,7 @@ export function lerLinhasPlanilha(linhas: unknown[][], dataPadrao: string): Resu
 
   const idxCabecalho = linhas.findIndex((linha) => {
     const campos = (linha ?? []).map(identificarCampo);
-    return campos.includes("vendedor") && campos.includes("quantidade");
+    return campos.includes("vendedor") && (campos.includes("quantidade") || campos.includes("campanha"));
   });
 
   if (idxCabecalho === -1) {
@@ -137,20 +138,27 @@ export function lerLinhasPlanilha(linhas: unknown[][], dataPadrao: string): Resu
     return { vendas, erros: ["Falta a coluna Loja na planilha."] };
   }
 
+  const duasColunas = colunas.quantidade !== undefined && colunas.campanha !== undefined;
+  const vazio = (v: unknown) => v === null || v === undefined || String(v).trim() === "";
+  // Com as duas colunas, célula em branco vale 0; com uma só, é obrigatória.
+  const lerColuna = (linha: unknown[], idx: number | undefined) => {
+    if (idx === undefined) return 0;
+    const valor = linha[idx];
+    if (duasColunas && vazio(valor)) return 0;
+    return lerQuantidade(valor);
+  };
+
   for (let i = idxCabecalho + 1; i < linhas.length; i++) {
     const linha = linhas[i] ?? [];
     const numLinha = i + 1;
-    const vazia = linha.every((c) => c === null || c === undefined || String(c).trim() === "");
-    if (vazia) continue;
+    if (linha.every(vazio)) continue;
 
     const vendedor = formatarNome(linha[colunas.vendedor!]);
     const loja = formatarNome(linha[colunas.loja]);
-    const quantidade = lerQuantidade(linha[colunas.quantidade!]);
+    const normal = lerColuna(linha, colunas.quantidade);
+    const campanha = lerColuna(linha, colunas.campanha);
     const valorData = colunas.data !== undefined ? linha[colunas.data] : undefined;
-    const data =
-      valorData === undefined || valorData === null || String(valorData).trim() === ""
-        ? dataPadrao
-        : lerData(valorData);
+    const data = vazio(valorData) ? dataPadrao : lerData(valorData);
 
     if (!vendedor) {
       erros.push(`Linha ${numLinha}: vendedor em branco.`);
@@ -160,15 +168,19 @@ export function lerLinhasPlanilha(linhas: unknown[][], dataPadrao: string): Resu
       erros.push(`Linha ${numLinha}: loja em branco.`);
       continue;
     }
-    if (quantidade === null) {
+    if (normal === null) {
       erros.push(`Linha ${numLinha}: quantidade inválida ("${linha[colunas.quantidade!] ?? ""}").`);
+      continue;
+    }
+    if (campanha === null) {
+      erros.push(`Linha ${numLinha}: quantidade de campanha inválida ("${linha[colunas.campanha!] ?? ""}").`);
       continue;
     }
     if (!data) {
       erros.push(`Linha ${numLinha}: data inválida ("${valorData}"). Use dd/mm/aaaa.`);
       continue;
     }
-    vendas.push({ data, vendedor, loja, quantidade });
+    vendas.push({ data, vendedor, loja, quantidade: normal + campanha, quantidade_campanha: campanha });
   }
 
   return { vendas, erros };
