@@ -1,9 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { ChevronLeft, ChevronRight, Upload } from "lucide-react";
-import { Marca } from "@/components/marca";
+import { Marca, Rodape } from "@/components/marca";
 import {
   DestaqueCard,
+  LojaDestaqueCard,
   MetaCard,
   Podio,
   RankingLojas,
@@ -89,8 +90,8 @@ function Index() {
 
       <div className="mt-10 md:mt-14">
         <h1 className="font-display text-3xl font-black leading-[1.05] md:text-6xl">
-          Quem está <span className="text-fire">pegando fogo</span>
-          <br className="hidden md:block" /> em {(nomeMes(mes).split(" ")[0] ?? "").toLowerCase()}?
+          Veja os <span className="text-fire">destaques</span>
+          <br className="hidden md:block" /> da nossa <span className="text-fire">campanha</span>
         </h1>
         {painel.ultima_data && (
           <p className="mt-3 text-sm text-muted-foreground">
@@ -99,9 +100,13 @@ function Index() {
         )}
       </div>
 
-      <div className="mt-8 grid gap-5 lg:grid-cols-[1.4fr_1fr]">
+      <div className="mt-8">
         <MetaCard painel={painel} />
+      </div>
+
+      <div className="mt-5 grid gap-5 lg:grid-cols-2">
         <DestaqueCard destaque={painel.destaque} />
+        <LojaDestaqueCard loja={painel.loja_destaque} />
       </div>
 
       <div className="mt-5">
@@ -112,6 +117,7 @@ function Index() {
         <RankingVendedores vendedores={painel.vendedores} />
         <RankingLojas lojas={painel.lojas} />
       </div>
+      <Rodape />
     </div>
   );
 }
