@@ -2,7 +2,10 @@ export type LinhaVenda = {
   data: string; // YYYY-MM-DD
   vendedor: string;
   loja: string;
+  /** Total de unidades (normais + campanha). */
   quantidade: number;
+  /** Quantas das unidades são do item de campanha (comissão reduzida). */
+  quantidade_campanha: number;
 };
 
 export type ResultadoPlanilha = {
@@ -10,9 +13,9 @@ export type ResultadoPlanilha = {
   erros: string[];
 };
 
-type Campo = "data" | "vendedor" | "loja" | "quantidade";
+type Campo = "data" | "vendedor" | "loja" | "quantidade" | "campanha";
 
-const SINONIMOS: Record<Campo, string[]> = {
+const SINONIMOS: Record<Exclude<Campo, "campanha">, string[]> = {
   data: ["data", "dia", "data da venda", "data venda"],
   vendedor: ["vendedor", "vendedora", "nome", "colaborador", "consultor", "consultora", "funcionario"],
   loja: ["loja", "filial", "unidade", "pdv", "ponto de venda"],
@@ -32,14 +35,21 @@ function normalizar(texto: unknown) {
 function identificarCampo(cabecalho: unknown): Campo | null {
   const n = normalizar(cabecalho);
   if (!n) return null;
-  for (const campo of Object.keys(SINONIMOS) as Campo[]) {
+  const ehQuantidade = SINONIMOS.quantidade.some((s) => n === s || n.startsWith(s));
+  // "Quantidade 0,10", "Qtd R$ 0,10", "Qtd campanha" -> unidades com comissão reduzida
+  if (/(^| )campanha( |$)/.test(n) || (ehQuantidade && /(^| )0 1(0)?( |$)/.test(n))) {
+    return "campanha";
+  }
+  const campos = Object.keys(SINONIMOS) as (keyof typeof SINONIMOS)[];
+  for (const campo of campos) {
     if (SINONIMOS[campo].includes(n)) return campo;
   }
-  for (const campo of Object.keys(SINONIMOS) as Campo[]) {
+  for (const campo of campos) {
     if (SINONIMOS[campo].some((s) => n.startsWith(s))) return campo;
   }
   return null;
 }
+
 
 const CONECTIVOS = new Set(["da", "de", "do", "das", "dos", "e"]);
 
