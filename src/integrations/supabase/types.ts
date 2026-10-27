@@ -82,6 +82,7 @@ export type Database = {
           importacao_id: string | null
           loja: string
           quantidade: number
+          quantidade_campanha: number
           vendedor: string
         }
         Insert: {
@@ -91,6 +92,7 @@ export type Database = {
           importacao_id?: string | null
           loja: string
           quantidade: number
+          quantidade_campanha?: number
           vendedor: string
         }
         Update: {
@@ -100,6 +102,7 @@ export type Database = {
           importacao_id?: string | null
           loja?: string
           quantidade?: number
+          quantidade_campanha?: number
           vendedor?: string
         }
         Relationships: [

@@ -8,6 +8,13 @@
       "when": 1793056473711,
       "tag": "0000_ranking_vendas",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1793063803786,
+      "tag": "0001_quantidade_campanha",
+      "breakpoints": true
     }
   ]
 }
