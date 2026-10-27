@@ -153,7 +153,7 @@ export function DestaqueCard({ destaque }: { destaque: Destaque | null }) {
             <div className="rounded-xl bg-muted/60 px-4 py-3">
               <p className="text-xs text-muted-foreground">Comissão do dia</p>
               <p className="font-display text-2xl font-extrabold text-sun">
-                {formatarBRL(comissaoVendedor(destaque.quantidade))}
+                {formatarBRL(comissaoVendedor(destaque.quantidade, destaque.campanha))}
               </p>
             </div>
           </div>
@@ -206,7 +206,7 @@ export function Podio({ vendedores }: { vendedores: VendedorRanking[] }) {
                 <p className="mt-2 font-display text-lg font-extrabold md:text-2xl">
                   {formatarNumero(v.quantidade)} <span className="text-xs font-semibold text-muted-foreground">un.</span>
                 </p>
-                <p className="text-sm font-bold text-sun">{formatarBRL(comissaoVendedor(v.quantidade))}</p>
+                <p className="text-sm font-bold text-sun">{formatarBRL(comissaoVendedor(v.quantidade, v.campanha))}</p>
                 <div
                   className={cn(
                     "mt-4 flex w-full items-start justify-center rounded-t-2xl pt-3",
@@ -239,7 +239,7 @@ export function RankingVendedores({ vendedores }: { vendedores: VendedorRanking[
         <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
           <Users className="size-4 text-ember" /> Ranking geral de vendedores
         </div>
-        <span className="text-xs text-muted-foreground">R$ 0,20 por unidade</span>
+        <span className="text-xs text-muted-foreground">R$ 0,20 por unidade · R$ 0,10 na campanha</span>
       </div>
       {vendedores.length === 0 ? (
         <p className="mt-6 text-sm text-muted-foreground">Sem vendas neste mês.</p>
@@ -279,7 +279,7 @@ export function RankingVendedores({ vendedores }: { vendedores: VendedorRanking[
                   <span className="text-xs font-medium text-muted-foreground sm:hidden"> un.</span>
                 </p>
                 <p className="text-sm font-bold text-sun sm:text-right">
-                  {formatarBRL(comissaoVendedor(v.quantidade))}
+                  {formatarBRL(comissaoVendedor(v.quantidade, v.campanha))}
                 </p>
               </div>
             </li>
@@ -298,7 +298,7 @@ export function RankingLojas({ lojas }: { lojas: LojaRanking[] }) {
         <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
           <Store className="size-4 text-sun" /> Ranking das lojas
         </div>
-        <span className="text-xs text-muted-foreground">R$ 0,05 por unidade</span>
+        <span className="text-xs text-muted-foreground">R$ 0,05 por unidade · R$ 0,025 na campanha</span>
       </div>
       {lojas.length === 0 ? (
         <p className="mt-6 text-sm text-muted-foreground">Sem vendas neste mês.</p>
@@ -332,7 +332,7 @@ export function RankingLojas({ lojas }: { lojas: LojaRanking[] }) {
                 <span>
                   {l.vendedores} {l.vendedores === 1 ? "vendedor" : "vendedores"}
                 </span>
-                <span className="font-bold text-sun">Comissão {formatarBRL(comissaoLoja(l.quantidade))}</span>
+                <span className="font-bold text-sun">Comissão {formatarBRL(comissaoLoja(l.quantidade, l.campanha))}</span>
               </div>
             </li>
           ))}

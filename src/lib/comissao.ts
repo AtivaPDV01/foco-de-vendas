@@ -2,18 +2,31 @@
 export const COMISSAO_VENDEDOR_POR_UNIDADE = 0.2;
 /** Comissão da loja por unidade vendida na loja, em reais. */
 export const COMISSAO_LOJA_POR_UNIDADE = 0.05;
+/** Comissão do vendedor por unidade do item de campanha (comissão reduzida), em reais. */
+export const COMISSAO_VENDEDOR_CAMPANHA = 0.1;
+/** Comissão da loja por unidade do item de campanha (metade da normal), em reais. */
+export const COMISSAO_LOJA_CAMPANHA = 0.025;
 
-// Calcula em centavos inteiros para evitar erros de ponto flutuante.
-function emReais(unidades: number, centavosPorUnidade: number) {
-  return (Math.round(unidades) * centavosPorUnidade) / 100;
+// Calcula em milésimos de real inteiros para evitar erros de ponto flutuante
+// (a loja ganha R$ 0,025 na campanha, que não cabe em centavos).
+const mil = (reais: number) => Math.round(reais * 1000);
+
+function comissao(unidades: number, campanha: number, normal: number, reduzida: number) {
+  const total = Math.max(Math.round(unidades), 0);
+  const camp = Math.min(Math.max(Math.round(campanha), 0), total);
+  return ((total - camp) * mil(normal) + camp * mil(reduzida)) / 1000;
 }
 
-export function comissaoVendedor(unidades: number) {
-  return emReais(unidades, Math.round(COMISSAO_VENDEDOR_POR_UNIDADE * 100));
+/**
+ * @param unidades total de unidades vendidas
+ * @param campanha quantas dessas unidades são do item de campanha
+ */
+export function comissaoVendedor(unidades: number, campanha = 0) {
+  return comissao(unidades, campanha, COMISSAO_VENDEDOR_POR_UNIDADE, COMISSAO_VENDEDOR_CAMPANHA);
 }
 
-export function comissaoLoja(unidades: number) {
-  return emReais(unidades, Math.round(COMISSAO_LOJA_POR_UNIDADE * 100));
+export function comissaoLoja(unidades: number, campanha = 0) {
+  return comissao(unidades, campanha, COMISSAO_LOJA_POR_UNIDADE, COMISSAO_LOJA_CAMPANHA);
 }
 
 /** Percentual da meta atingido (0–100+, sem teto). */
