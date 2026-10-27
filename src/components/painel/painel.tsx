@@ -7,7 +7,7 @@ import {
   progressoMeta,
 } from "@/lib/comissao";
 import { dataBR, diaDaSemana, diasNoMes, hojeSP, mesAtualSP, somarDias } from "@/lib/datas";
-import type { Destaque, LojaRanking, Painel, VendedorRanking } from "@/lib/painel.functions";
+import type { Destaque, LojaDestaque, LojaRanking, Painel, VendedorRanking } from "@/lib/painel.functions";
 import { cn } from "@/lib/utils";
 
 export function iniciais(nome: string) {
@@ -154,6 +154,49 @@ export function DestaqueCard({ destaque }: { destaque: Destaque | null }) {
               <p className="text-xs text-muted-foreground">Comissão do dia</p>
               <p className="font-display text-2xl font-extrabold text-sun">
                 {formatarBRL(comissaoVendedor(destaque.quantidade, destaque.campanha))}
+              </p>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <p className="mt-6 text-sm text-muted-foreground">Nenhuma venda lançada ainda.</p>
+      )}
+    </section>
+  );
+}
+
+export function LojaDestaqueCard({ loja }: { loja: LojaDestaque | null }) {
+  return (
+    <section className="surface ring-fire relative overflow-hidden p-6 md:p-8 animate-rise [animation-delay:240ms]">
+      <div className="bg-fire pointer-events-none absolute -left-16 -bottom-16 size-48 rounded-full opacity-25 blur-3xl" />
+      <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
+        <Store className="size-4 text-sun" /> Loja destaque do dia
+      </div>
+      {loja ? (
+        <div className="relative mt-5">
+          <p className="text-sm capitalize text-muted-foreground">{rotuloDia(loja.data)}</p>
+          <div className="mt-4 flex items-center gap-4">
+            <div className="bg-fire glow-sun flex size-16 shrink-0 items-center justify-center rounded-2xl text-accent-foreground">
+              <Store className="size-7" />
+            </div>
+            <div className="min-w-0">
+              <p className="truncate font-display text-2xl font-bold md:text-3xl">{loja.loja}</p>
+              <p className="flex items-center gap-1 text-sm text-muted-foreground">
+                <Users className="size-3.5" /> {loja.vendedores} {loja.vendedores === 1 ? "vendedor" : "vendedores"} no dia
+              </p>
+            </div>
+          </div>
+          <div className="mt-6 grid grid-cols-2 gap-3">
+            <div className="rounded-xl bg-muted/60 px-4 py-3">
+              <p className="text-xs text-muted-foreground">Vendeu</p>
+              <p className="text-fire font-display text-2xl font-extrabold">
+                {formatarNumero(loja.quantidade)} un.
+              </p>
+            </div>
+            <div className="rounded-xl bg-muted/60 px-4 py-3">
+              <p className="text-xs text-muted-foreground">Comissão da loja</p>
+              <p className="font-display text-2xl font-extrabold text-sun">
+                {formatarBRL(comissaoLoja(loja.quantidade, loja.campanha))}
               </p>
             </div>
           </div>
