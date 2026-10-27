@@ -89,7 +89,7 @@ function Index() {
       </header>
 
       <div className="mt-10 md:mt-14">
-        <h1 className="font-display text-3xl font-black leading-[1.05] md:text-6xl">
+        <h1 className="font-display text-3xl font-black uppercase leading-[1.05] md:text-6xl">
           Veja os <span className="text-fire">destaques</span>
           <br className="hidden md:block" /> da nossa <span className="text-fire">campanha</span>
         </h1>

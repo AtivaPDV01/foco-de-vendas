@@ -14,5 +14,5 @@
 - Commission rates and goal math live only in `src/lib/comissao.ts`, covered by `src/test/regras.test.ts`; UI must call these helpers instead of inlining rates.
 - Sales are written only by users with the `admin` role (RLS via `has_role`); the first signed-up account is auto-granted admin by a trigger on `auth.users`.
 - Spreadsheet parsing is pure (`src/lib/planilha.ts`) and runs in the browser; `xlsx` is loaded with dynamic import to keep it out of the main bundle.
-- All dates are calendar dates in America/Sao_Paulo (`src/lib/datas.ts`); "destaque do dia" is the latest sales date before today.
+- All dates are calendar dates in America/Sao_Paulo (`src/lib/datas.ts`); "destaque do dia" (top seller and top store) uses the latest sales date before today.
 - `vendas.quantidade` is the total units (drives goal and ranking); `vendas.quantidade_campanha` is the subset paying the reduced campaign rate — keeps every existing sum unchanged while commission helpers take both values.
