@@ -5,9 +5,10 @@ import { z } from "zod";
 import type { Database } from "@/integrations/supabase/types";
 import { mesAtualSP } from "@/lib/datas";
 
-export type VendedorRanking = { vendedor: string; loja: string; quantidade: number };
-export type LojaRanking = { loja: string; quantidade: number; vendedores: number };
-export type Destaque = { data: string; vendedor: string; loja: string; quantidade: number };
+// `quantidade` é o total de unidades; `campanha` é quantas delas pagam comissão reduzida.
+export type VendedorRanking = { vendedor: string; loja: string; quantidade: number; campanha: number };
+export type LojaRanking = { loja: string; quantidade: number; campanha: number; vendedores: number };
+export type Destaque = { data: string; vendedor: string; loja: string; quantidade: number; campanha: number };
 
 export type Painel = {
   mes: string; // YYYY-MM-01

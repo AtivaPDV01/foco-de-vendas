@@ -99,11 +99,11 @@ async function baixarModelo() {
   const XLSX = await import("xlsx");
   const hoje = dataBR(hojeSP());
   const ws = XLSX.utils.aoa_to_sheet([
-    ["Data", "Vendedor", "Loja", "Quantidade"],
-    [hoje, "Maria Silva", "Loja Centro", 12],
-    [hoje, "João Souza", "Loja Shopping", 8],
+    ["Data", "Vendedor", "Loja", "Quantidade R$ 0,20", "Quantidade R$ 0,10"],
+    [hoje, "Maria Silva", "Loja Centro", 12, 3],
+    [hoje, "João Souza", "Loja Shopping", 8, 0],
   ]);
-  ws["!cols"] = [{ wch: 12 }, { wch: 24 }, { wch: 20 }, { wch: 12 }];
+  ws["!cols"] = [{ wch: 12 }, { wch: 24 }, { wch: 20 }, { wch: 20 }, { wch: 20 }];
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Vendas");
   XLSX.writeFile(wb, "modelo-vendas.xlsx");
@@ -178,8 +178,8 @@ function Importar() {
   }
 
   const totalUnidades = resultado?.vendas.reduce((s, v) => s + v.quantidade, 0) ?? 0;
+  const totalCampanha = resultado?.vendas.reduce((s, v) => s + v.quantidade_campanha, 0) ?? 0;
   const vendedores = new Set(resultado?.vendas.map((v) => v.vendedor)).size;
-  const lojas = new Set(resultado?.vendas.map((v) => v.loja)).size;
 
   return (
     <section className="surface glow p-6 md:p-8">
@@ -193,9 +193,10 @@ function Importar() {
       </div>
 
       <p className="mt-3 text-sm text-muted-foreground">
-        Colunas: <b className="text-foreground">Vendedor</b>, <b className="text-foreground">Loja</b>,{" "}
-        <b className="text-foreground">Quantidade</b> e, se quiser, <b className="text-foreground">Data</b>.
-        Linhas sem data usam a data abaixo.
+        Colunas: <b className="text-foreground">Data</b> (opcional), <b className="text-foreground">Vendedor</b>,{" "}
+        <b className="text-foreground">Loja</b>, <b className="text-foreground">Quantidade R$ 0,20</b> e{" "}
+        <b className="text-foreground">Quantidade R$ 0,10</b> (item da campanha). Linhas sem data usam a data
+        abaixo.
       </p>
 
       <div className="mt-5 grid gap-4 sm:grid-cols-[12rem_1fr]">
