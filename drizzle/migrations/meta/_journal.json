@@ -15,6 +15,13 @@
       "when": 1793063803786,
       "tag": "0001_quantidade_campanha",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793066160303,
+      "tag": "0002_loja_destaque_do_dia",
+      "breakpoints": true
     }
   ]
 }
