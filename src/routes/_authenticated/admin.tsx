@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { lerLinhasPlanilha, type ResultadoPlanilha } from "@/lib/planilha";
 import { dataBR, hojeSP, mesAtualSP, nomeMes } from "@/lib/datas";
-import { formatarNumero } from "@/lib/comissao";
+import { comissaoVendedor, formatarBRL, formatarNumero } from "@/lib/comissao";
 
 const adminQuery = queryOptions({
   queryKey: ["admin"],
@@ -237,11 +237,12 @@ function Importar() {
         <div className="mt-6">
           {resultado.vendas.length > 0 && (
             <>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                 {[
-                  ["Unidades", totalUnidades],
+                  ["Unidades R$ 0,20", totalUnidades - totalCampanha],
+                  ["Unidades R$ 0,10", totalCampanha],
+                  ["Total", totalUnidades],
                   ["Vendedores", vendedores],
-                  ["Lojas", lojas],
                 ].map(([rotulo, valor]) => (
                   <div key={rotulo} className="rounded-xl bg-muted/60 px-4 py-3">
                     <p className="text-xs text-muted-foreground">{rotulo}</p>
@@ -256,7 +257,9 @@ function Importar() {
                       <th className="px-3 py-2">Data</th>
                       <th className="px-3 py-2">Vendedor</th>
                       <th className="px-3 py-2">Loja</th>
-                      <th className="px-3 py-2 text-right">Qtd.</th>
+                      <th className="px-3 py-2 text-right">R$ 0,20</th>
+                      <th className="px-3 py-2 text-right">R$ 0,10</th>
+                      <th className="px-3 py-2 text-right">Comissão</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
@@ -265,7 +268,11 @@ function Importar() {
                         <td className="px-3 py-2 text-muted-foreground">{dataBR(v.data)}</td>
                         <td className="px-3 py-2 font-medium">{v.vendedor}</td>
                         <td className="px-3 py-2 text-muted-foreground">{v.loja}</td>
-                        <td className="px-3 py-2 text-right font-bold">{v.quantidade}</td>
+                        <td className="px-3 py-2 text-right font-bold">{v.quantidade - v.quantidade_campanha}</td>
+                        <td className="px-3 py-2 text-right font-bold">{v.quantidade_campanha}</td>
+                        <td className="px-3 py-2 text-right font-bold text-sun">
+                          {formatarBRL(comissaoVendedor(v.quantidade, v.quantidade_campanha))}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
