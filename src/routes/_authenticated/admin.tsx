@@ -1,8 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { queryOptions, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import { toast } from "sonner";
-import { Download, FileSpreadsheet, LogOut, Target, Trash2, Trophy, Upload } from "lucide-react";
+import { Download, FileSpreadsheet, LogOut, RefreshCw, Target, Trash2, Trophy, Upload } from "lucide-react";
 import { Marca } from "@/components/marca";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,22 +12,30 @@ import { supabase } from "@/integrations/supabase/client";
 import { lerLinhasPlanilha, type ResultadoPlanilha } from "@/lib/planilha";
 import { dataBR, hojeSP, mesAtualSP, nomeMes } from "@/lib/datas";
 import { comissaoVendedor, formatarBRL, formatarNumero } from "@/lib/comissao";
+import { sincronizarMercaflowAgora } from "@/lib/mercaflow.functions";
 
 const adminQuery = queryOptions({
   queryKey: ["admin"],
   queryFn: async () => {
     const { data: auth } = await supabase.auth.getUser();
     const userId = auth.user?.id ?? "";
-    const [papeis, importacoes, metas] = await Promise.all([
+    const [papeis, importacoes, metas, sincronizacoes] = await Promise.all([
       supabase.from("user_roles").select("role").eq("user_id", userId),
       supabase.from("importacoes").select("*").order("created_at", { ascending: false }).limit(30),
       supabase.from("metas").select("*").order("mes", { ascending: false }).limit(12),
+      supabase
+        .from("sincronizacoes")
+        .select("*")
+        .eq("origem", "mercaflow")
+        .order("iniciado_em", { ascending: false })
+        .limit(5),
     ]);
     return {
       email: auth.user?.email ?? "",
       admin: (papeis.data ?? []).some((p) => p.role === "admin"),
       importacoes: importacoes.data ?? [],
       metas: metas.data ?? [],
+      sincronizacoes: sincronizacoes.data ?? [],
     };
   },
 });
@@ -86,12 +95,101 @@ function AdminPage() {
         <div className="mt-8 grid gap-5 lg:grid-cols-[1.5fr_1fr]">
           <Importar />
           <div className="space-y-5">
+            <Mercaflow sincronizacoes={data.sincronizacoes} />
             <Metas metas={data.metas} />
             <Historico importacoes={data.importacoes} />
           </div>
         </div>
       )}
     </div>
+  );
+}
+
+type Sincronizacao = {
+  id: string;
+  gatilho: string;
+  status: string;
+  iniciado_em: string;
+  concluido_em: string | null;
+  linhas: number | null;
+  unidades: number | null;
+  campanhas: string[] | null;
+  mensagem: string | null;
+};
+
+const dataHora = (iso: string) =>
+  new Date(iso).toLocaleString("pt-BR", {
+    timeZone: "America/Sao_Paulo",
+    dateStyle: "short",
+    timeStyle: "short",
+  });
+
+function Mercaflow({ sincronizacoes }: { sincronizacoes: Sincronizacao[] }) {
+  const queryClient = useQueryClient();
+  const sincronizar = useServerFn(sincronizarMercaflowAgora);
+  const [rodando, setRodando] = useState(false);
+  const ultima = sincronizacoes[0];
+  const ultimaOk = sincronizacoes.find((s) => s.status === "ok");
+  // Uma sincronização "executando" há mais de 5 minutos foi interrompida.
+  const travada =
+    ultima?.status === "executando" && Date.now() - new Date(ultima.iniciado_em).getTime() > 5 * 60_000;
+  const status = rodando ? "executando" : travada ? "erro" : ultima?.status;
+
+  async function agora() {
+    setRodando(true);
+    try {
+      const r = await sincronizar();
+      if (r.ok) toast.success(`Mercaflow sincronizado: ${formatarNumero(r.unidades)} unidades.`);
+      else toast.error(r.erro);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Não foi possível sincronizar.");
+    } finally {
+      setRodando(false);
+      queryClient.invalidateQueries({ queryKey: ["painel"] });
+      queryClient.invalidateQueries({ queryKey: ["admin"] });
+    }
+  }
+
+  const rotulo =
+    status === "executando"
+      ? "Sincronizando..."
+      : status === "ok"
+        ? "Sincronizado"
+        : status === "erro"
+          ? "Falhou"
+          : "Nunca sincronizado";
+  const cor =
+    status === "ok" ? "bg-sun" : status === "erro" ? "bg-destructive" : status === "executando" ? "bg-ember animate-pulse" : "bg-muted-foreground";
+
+  return (
+    <section className="surface p-6">
+      <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
+        <RefreshCw className="size-4 text-sun" /> Mercaflow
+      </div>
+      <div className="mt-4 flex items-center gap-2 text-sm font-semibold">
+        <span className={`size-2.5 rounded-full ${cor}`} aria-hidden />
+        {rotulo}
+      </div>
+      <p className="mt-1 text-xs text-muted-foreground">
+        {ultimaOk?.concluido_em
+          ? `Última sincronização: ${dataHora(ultimaOk.concluido_em)} · ${formatarNumero(ultimaOk.unidades ?? 0)} un.`
+          : "Nenhuma sincronização concluída ainda."}
+      </p>
+      {ultimaOk?.campanhas?.length ? (
+        <p className="mt-1 text-xs text-muted-foreground">Campanhas: {ultimaOk.campanhas.join(", ")}</p>
+      ) : null}
+      {status === "erro" && (
+        <p className="mt-2 rounded-lg bg-destructive/10 px-3 py-2 text-xs">
+          {travada ? "A última sincronização foi interrompida." : ultima?.mensagem}
+          {ultima ? ` (${dataHora(ultima.iniciado_em)})` : ""}
+        </p>
+      )}
+      <Button variant="fire" className="mt-4 w-full" disabled={rodando} onClick={agora}>
+        <RefreshCw className={rodando ? "animate-spin" : undefined} />
+        {rodando ? "Sincronizando..." : "Sincronizar Mercaflow agora"}
+      </Button>
+      <p className="mt-2 text-xs text-muted-foreground">Também sincroniza sozinho a cada 30 minutos.</p>
+    </section>
   );
 }
 

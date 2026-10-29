@@ -22,6 +22,13 @@
       "when": 1793066160303,
       "tag": "0002_loja_destaque_do_dia",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1793283571817,
+      "tag": "0003_sincronizacao_mercaflow",
+      "breakpoints": true
     }
   ]
 }

@@ -56,6 +56,45 @@ export type Database = {
         }
         Relationships: []
       }
+      sincronizacoes: {
+        Row: {
+          campanhas: string[] | null
+          concluido_em: string | null
+          gatilho: string
+          id: string
+          iniciado_em: string
+          linhas: number | null
+          mensagem: string | null
+          origem: string
+          status: string
+          unidades: number | null
+        }
+        Insert: {
+          campanhas?: string[] | null
+          concluido_em?: string | null
+          gatilho: string
+          id?: string
+          iniciado_em?: string
+          linhas?: number | null
+          mensagem?: string | null
+          origem?: string
+          status?: string
+          unidades?: number | null
+        }
+        Update: {
+          campanhas?: string[] | null
+          concluido_em?: string | null
+          gatilho?: string
+          id?: string
+          iniciado_em?: string
+          linhas?: number | null
+          mensagem?: string | null
+          origem?: string
+          status?: string
+          unidades?: number | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -120,6 +159,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      aplicar_sincronizacao_mercaflow: {
+        Args: { _linhas: Json; _periodos: Json }
+        Returns: Json
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
