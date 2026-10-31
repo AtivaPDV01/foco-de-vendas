@@ -10,6 +10,7 @@ import {
   RankingLojas,
   RankingVendedores,
 } from "@/components/painel/painel";
+import { AbasPainel, SeloSincronizacao } from "@/components/painel/navegacao";
 import { painelQuery } from "@/lib/painel.functions";
 import { dataBR, mesAtualSP, nomeMes, somarMes } from "@/lib/datas";
 
@@ -88,7 +89,12 @@ function Index() {
         </div>
       </header>
 
-      <div className="mt-10 md:mt-14">
+      <div className="mt-8 flex flex-wrap items-center gap-3">
+        <AbasPainel ativa="mes" />
+        <SeloSincronizacao />
+      </div>
+
+      <div className="mt-8">
         <h1 className="font-display text-3xl font-black uppercase leading-[1.05] md:text-6xl">
           Veja os <span className="text-fire">destaques</span>
           <br className="hidden md:block" /> da nossa <span className="text-fire">campanha</span>
