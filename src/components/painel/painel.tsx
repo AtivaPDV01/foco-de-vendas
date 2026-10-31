@@ -275,17 +275,25 @@ export function Podio({ vendedores }: { vendedores: VendedorRanking[] }) {
   );
 }
 
-export function RankingVendedores({ vendedores }: { vendedores: VendedorRanking[] }) {
+export function RankingVendedores({
+  vendedores,
+  titulo = "Ranking geral de vendedores",
+  vazio = "Sem vendas neste mês.",
+}: {
+  vendedores: VendedorRanking[];
+  titulo?: string;
+  vazio?: string;
+}) {
   return (
     <section className="surface p-6 md:p-8">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
-          <Users className="size-4 text-ember" /> Ranking geral de vendedores
+          <Users className="size-4 text-ember" /> {titulo}
         </div>
         <span className="text-xs text-muted-foreground">R$ 0,20 por unidade · R$ 0,10 na campanha</span>
       </div>
       {vendedores.length === 0 ? (
-        <p className="mt-6 text-sm text-muted-foreground">Sem vendas neste mês.</p>
+        <p className="mt-6 text-sm text-muted-foreground">{vazio}</p>
       ) : (
         <ol className="mt-5 divide-y divide-border">
           <li className="hidden grid-cols-[2.5rem_1fr_6rem_7rem] gap-3 pb-2 text-[11px] font-bold uppercase tracking-wider text-muted-foreground sm:grid">
@@ -333,18 +341,26 @@ export function RankingVendedores({ vendedores }: { vendedores: VendedorRanking[
   );
 }
 
-export function RankingLojas({ lojas }: { lojas: LojaRanking[] }) {
+export function RankingLojas({
+  lojas,
+  titulo = "Ranking das lojas",
+  vazio = "Sem vendas neste mês.",
+}: {
+  lojas: LojaRanking[];
+  titulo?: string;
+  vazio?: string;
+}) {
   const maior = lojas[0]?.quantidade || 1;
   return (
     <section className="surface p-6 md:p-8">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
-          <Store className="size-4 text-sun" /> Ranking das lojas
+          <Store className="size-4 text-sun" /> {titulo}
         </div>
         <span className="text-xs text-muted-foreground">R$ 0,05 por unidade · R$ 0,025 na campanha</span>
       </div>
       {lojas.length === 0 ? (
-        <p className="mt-6 text-sm text-muted-foreground">Sem vendas neste mês.</p>
+        <p className="mt-6 text-sm text-muted-foreground">{vazio}</p>
       ) : (
         <ol className="mt-5 space-y-4">
           {lojas.map((l, i) => (

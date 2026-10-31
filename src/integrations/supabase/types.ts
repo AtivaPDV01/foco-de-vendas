@@ -170,7 +170,9 @@ export type Database = {
         }
         Returns: boolean
       }
+      painel_dia: { Args: { _data: string }; Returns: Json }
       painel_mes: { Args: { _mes: string }; Returns: Json }
+      ultima_sincronizacao: { Args: never; Returns: string }
     }
     Enums: {
       app_role: "admin"

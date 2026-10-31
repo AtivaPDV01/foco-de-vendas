@@ -1,0 +1,3 @@
+- [x] Sincronização Mercaflow a cada 5 min
+- [x] Selo ao vivo com hora da última sincronização
+- [x] Aba Dia com filtros de data, loja e vendedor
