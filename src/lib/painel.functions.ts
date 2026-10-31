@@ -24,27 +24,32 @@ export type Painel = {
 
 const entrada = z.object({ mes: z.string().regex(/^\d{4}-\d{2}$/).optional() });
 
+function clientePublico() {
+  const url = process.env["SUPABASE_URL"]!;
+  const key = process.env["SUPABASE_PUBLISHABLE_KEY"]!;
+  return createClient<Database>(url, key, {
+    auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
+    global: {
+      fetch: (input, init) => {
+        const h = new Headers(init?.headers);
+        if (key.startsWith("sb_") && h.get("Authorization") === `Bearer ${key}`) {
+          h.delete("Authorization");
+        }
+        h.set("apikey", key);
+        return fetch(input, { ...init, headers: h });
+      },
+    },
+  });
+}
+
+// Recarrega o painel a cada 30 s; a sincronização com o Mercaflow roda a cada 5 min.
+const ATUALIZACAO_MS = 30_000;
+
 export const getPainel = createServerFn({ method: "GET" })
   .inputValidator((input: { mes?: string | undefined }) => entrada.parse(input))
   .handler(async ({ data }) => {
-    const url = process.env["SUPABASE_URL"]!;
-    const key = process.env["SUPABASE_PUBLISHABLE_KEY"]!;
-    const client = createClient<Database>(url, key, {
-      auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
-      global: {
-        fetch: (input, init) => {
-          const h = new Headers(init?.headers);
-          if (key.startsWith("sb_") && h.get("Authorization") === `Bearer ${key}`) {
-            h.delete("Authorization");
-          }
-          h.set("apikey", key);
-          return fetch(input, { ...init, headers: h });
-        },
-      },
-    });
-
     const mes = data.mes ?? mesAtualSP();
-    const { data: painel, error } = await client.rpc("painel_mes", { _mes: `${mes}-01` });
+    const { data: painel, error } = await clientePublico().rpc("painel_mes", { _mes: `${mes}-01` });
     if (error) throw new Error(error.message);
     return painel as unknown as Painel;
   });
@@ -53,5 +58,44 @@ export const painelQuery = (mes?: string) =>
   queryOptions({
     queryKey: ["painel", mes ?? "atual"],
     queryFn: () => getPainel({ data: { mes } }),
-    refetchInterval: 60_000,
+    refetchInterval: ATUALIZACAO_MS,
+  });
+
+export type PainelDia = {
+  data: string;
+  total: number;
+  campanha: number;
+  vendedores: VendedorRanking[];
+  lojas: LojaRanking[];
+  ultima_sincronizacao: string | null;
+};
+
+const entradaDia = z.object({ data: z.string().regex(/^\d{4}-\d{2}-\d{2}$/) });
+
+export const getPainelDia = createServerFn({ method: "GET" })
+  .inputValidator((input: { data: string }) => entradaDia.parse(input))
+  .handler(async ({ data }) => {
+    const { data: dia, error } = await clientePublico().rpc("painel_dia", { _data: data.data });
+    if (error) throw new Error(error.message);
+    return dia as unknown as PainelDia;
+  });
+
+export const painelDiaQuery = (data: string) =>
+  queryOptions({
+    queryKey: ["painel-dia", data],
+    queryFn: () => getPainelDia({ data: { data } }),
+    refetchInterval: ATUALIZACAO_MS,
+  });
+
+export const getUltimaSincronizacao = createServerFn({ method: "GET" }).handler(async () => {
+  const { data, error } = await clientePublico().rpc("ultima_sincronizacao");
+  if (error) throw new Error(error.message);
+  return (data as string | null) ?? null;
+});
+
+export const ultimaSincronizacaoQuery = () =>
+  queryOptions({
+    queryKey: ["ultima-sincronizacao"],
+    queryFn: () => getUltimaSincronizacao(),
+    refetchInterval: ATUALIZACAO_MS,
   });
