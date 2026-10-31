@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as DiaRouteImport } from './routes/dia'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as ApiPublicJobsSincronizarMercaflowRouteImport } from './routes/api/public/jobs/sincronizar-mercaflow'
 
@@ -29,6 +30,11 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DiaRoute = DiaRouteImport.update({
+  id: '/dia',
+  path: '/dia',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -44,12 +50,14 @@ const ApiPublicJobsSincronizarMercaflowRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/dia': typeof DiaRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/api/public/jobs/sincronizar-mercaflow': typeof ApiPublicJobsSincronizarMercaflowRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/dia': typeof DiaRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/api/public/jobs/sincronizar-mercaflow': typeof ApiPublicJobsSincronizarMercaflowRoute
 }
@@ -58,19 +66,23 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/dia': typeof DiaRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/api/public/jobs/sincronizar-mercaflow': typeof ApiPublicJobsSincronizarMercaflowRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/admin' | '/api/public/jobs/sincronizar-mercaflow'
+  fullPaths:
+    '/' | '/auth' | '/dia' | '/admin' | '/api/public/jobs/sincronizar-mercaflow'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/admin' | '/api/public/jobs/sincronizar-mercaflow'
+  to:
+    '/' | '/auth' | '/dia' | '/admin' | '/api/public/jobs/sincronizar-mercaflow'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/dia'
     | '/_authenticated/admin'
     | '/api/public/jobs/sincronizar-mercaflow'
   fileRoutesById: FileRoutesById
@@ -79,6 +91,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  DiaRoute: typeof DiaRoute
   ApiPublicJobsSincronizarMercaflowRoute: typeof ApiPublicJobsSincronizarMercaflowRoute
 }
 
@@ -103,6 +116,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dia': {
+      id: '/dia'
+      path: '/dia'
+      fullPath: '/dia'
+      preLoaderRoute: typeof DiaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/admin': {
@@ -137,6 +157,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  DiaRoute: DiaRoute,
   ApiPublicJobsSincronizarMercaflowRoute:
     ApiPublicJobsSincronizarMercaflowRoute,
 }
