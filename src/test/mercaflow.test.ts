@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { montarLinhasMercaflow, selecionarCampanhas } from "@/lib/mercaflow";
+import { montarLinhasMercaflow, produtosReduzidosDa, selecionarCampanhas } from "@/lib/mercaflow";
 
 const campanhas = [
   { id: 92, nome: "Venda Ativa PDV Outubro", dataInicio: "2026-10-01", dataFim: "2026-10-20" },
@@ -16,6 +16,22 @@ describe("campanhas sincronizadas", () => {
   it("continua sincronizando a campanha encerrada por 3 dias", () => {
     expect(selecionarCampanhas(campanhas, "2026-11-03").map((c) => c.id)).toEqual([106]);
     expect(selecionarCampanhas(campanhas, "2026-11-04").map((c) => c.id)).toEqual([]);
+  });
+});
+
+describe("campanha de novembro", () => {
+  const nov = [
+    { id: 120, nome: "ATIVA PDV NOVEMBRO", dataInicio: "2026-11-01", dataFim: "2026-11-30" },
+    { id: 121, nome: "SEMANA 23", dataInicio: "2026-11-02", dataFim: "2026-11-08" },
+  ];
+
+  it("reconhece a campanha ATIVA PDV NOVEMBRO", () => {
+    expect(selecionarCampanhas(nov, "2026-11-10").map((c) => c.id)).toEqual([120]);
+  });
+
+  it("novembro não tem item com comissão reduzida; outubro mantém o Mendorato", () => {
+    expect(produtosReduzidosDa(nov[0]!)).toEqual([]);
+    expect(produtosReduzidosDa(campanhas[1]!)).toEqual([18714]);
   });
 });
 

@@ -11,6 +11,8 @@ import {
   RankingVendedores,
 } from "@/components/painel/painel";
 import { AbasPainel, SeloSincronizacao } from "@/components/painel/navegacao";
+import { ItensCampanha } from "@/components/painel/itens-campanha";
+import { campanhaDoMes } from "@/lib/campanhas";
 import { painelQuery } from "@/lib/painel.functions";
 import { dataBR, mesAtualSP, nomeMes, somarMes } from "@/lib/datas";
 
@@ -44,6 +46,7 @@ function Index() {
   const { mes: mesBusca } = Route.useSearch();
   const { data: painel } = useSuspenseQuery(painelQuery(mesBusca));
   const mes = painel.mes.slice(0, 7);
+  const campanha = campanhaDoMes(mes);
   const anterior = somarMes(mes, -1);
   const proximo = somarMes(mes, 1);
   const podeAvancar = proximo <= mesAtualSP();

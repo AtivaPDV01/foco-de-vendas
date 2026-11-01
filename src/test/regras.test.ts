@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { comissaoLoja, comissaoVendedor, progressoMeta } from "@/lib/comissao";
+import { comissaoLoja, comissaoVendedor, progressoMeta, regraComissaoLoja, regraComissaoVendedor } from "@/lib/comissao";
 import { lerData, lerLinhasPlanilha, lerQuantidade } from "@/lib/planilha";
 
 describe("comissões", () => {
@@ -23,6 +23,18 @@ describe("comissões", () => {
     // 6 normais x 0,05 + 4 de campanha x 0,025
     expect(comissaoLoja(10, 4)).toBe(0.4);
     expect(comissaoLoja(40, 40)).toBe(1);
+  });
+});
+
+describe("regra de comissão por mês", () => {
+  it("novembro: todos os itens a R$ 0,20 (vendedor) e R$ 0,05 (loja)", () => {
+    expect(regraComissaoVendedor("2026-11")).toBe("R$ 0,20 por unidade");
+    expect(regraComissaoLoja("2026-11-15")).toBe("R$ 0,05 por unidade");
+  });
+
+  it("outubro continua mostrando a comissão reduzida da campanha", () => {
+    expect(regraComissaoVendedor("2026-10")).toBe("R$ 0,20 por unidade · R$ 0,10 na campanha");
+    expect(regraComissaoLoja("2026-10")).toBe("R$ 0,05 por unidade · R$ 0,025 na campanha");
   });
 });
 
