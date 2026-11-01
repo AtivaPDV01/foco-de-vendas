@@ -123,8 +123,8 @@ function Dia() {
       </div>
 
       <div className="mt-5 grid gap-5 lg:grid-cols-[1.4fr_1fr]">
-        <RankingVendedores vendedores={vendedores} titulo="Ranking de vendedores do dia" vazio="Nenhuma venda encontrada para este dia." />
-        <RankingLojas lojas={lojas} titulo="Ranking das lojas do dia" vazio="Nenhuma venda encontrada para este dia." />
+        <RankingVendedores vendedores={vendedores} mes={data} titulo="Ranking de vendedores do dia" vazio="Nenhuma venda encontrada para este dia." />
+        <RankingLojas lojas={lojas} mes={data} titulo="Ranking das lojas do dia" vazio="Nenhuma venda encontrada para este dia." />
       </div>
       <Rodape />
     </div>

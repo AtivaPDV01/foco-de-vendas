@@ -94,6 +94,12 @@ function Index() {
         <SeloSincronizacao />
       </div>
 
+      {campanha && (
+        <div className="mt-6">
+          <ItensCampanha campanha={campanha} />
+        </div>
+      )}
+
       <div className="mt-8">
         <h1 className="font-display text-3xl font-black uppercase leading-[1.05] md:text-6xl">
           Veja os <span className="text-fire">destaques</span>
@@ -120,8 +126,8 @@ function Index() {
       </div>
 
       <div className="mt-5 grid gap-5 lg:grid-cols-[1.4fr_1fr]">
-        <RankingVendedores vendedores={painel.vendedores} />
-        <RankingLojas lojas={painel.lojas} />
+        <RankingVendedores vendedores={painel.vendedores} mes={mes} />
+        <RankingLojas lojas={painel.lojas} mes={mes} />
       </div>
       <Rodape />
     </div>

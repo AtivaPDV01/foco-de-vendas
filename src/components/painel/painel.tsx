@@ -5,6 +5,8 @@ import {
   formatarBRL,
   formatarNumero,
   progressoMeta,
+  regraComissaoLoja,
+  regraComissaoVendedor,
 } from "@/lib/comissao";
 import { dataBR, diaDaSemana, diasNoMes, hojeSP, mesAtualSP, somarDias } from "@/lib/datas";
 import type { Destaque, LojaDestaque, LojaRanking, Painel, VendedorRanking } from "@/lib/painel.functions";
@@ -277,10 +279,13 @@ export function Podio({ vendedores }: { vendedores: VendedorRanking[] }) {
 
 export function RankingVendedores({
   vendedores,
+  mes,
   titulo = "Ranking geral de vendedores",
   vazio = "Sem vendas neste mês.",
 }: {
   vendedores: VendedorRanking[];
+  /** Mês (AAAA-MM) exibido, para mostrar a regra de comissão daquele mês. */
+  mes: string;
   titulo?: string;
   vazio?: string;
 }) {
@@ -290,7 +295,7 @@ export function RankingVendedores({
         <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
           <Users className="size-4 text-ember" /> {titulo}
         </div>
-        <span className="text-xs text-muted-foreground">R$ 0,20 por unidade · R$ 0,10 na campanha</span>
+        <span className="text-xs text-muted-foreground">{regraComissaoVendedor(mes)}</span>
       </div>
       {vendedores.length === 0 ? (
         <p className="mt-6 text-sm text-muted-foreground">{vazio}</p>
@@ -343,10 +348,13 @@ export function RankingVendedores({
 
 export function RankingLojas({
   lojas,
+  mes,
   titulo = "Ranking das lojas",
   vazio = "Sem vendas neste mês.",
 }: {
   lojas: LojaRanking[];
+  /** Mês (AAAA-MM) exibido, para mostrar a regra de comissão daquele mês. */
+  mes: string;
   titulo?: string;
   vazio?: string;
 }) {
@@ -357,7 +365,7 @@ export function RankingLojas({
         <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
           <Store className="size-4 text-sun" /> {titulo}
         </div>
-        <span className="text-xs text-muted-foreground">R$ 0,05 por unidade · R$ 0,025 na campanha</span>
+        <span className="text-xs text-muted-foreground">{regraComissaoLoja(mes)}</span>
       </div>
       {lojas.length === 0 ? (
         <p className="mt-6 text-sm text-muted-foreground">{vazio}</p>
