@@ -18,14 +18,12 @@ export function ItensCampanha({ campanha }: { campanha: Campanha }) {
               aria-hidden={i >= campanha.itens.length}
               className="w-40 shrink-0 md:w-52"
             >
-              <div className="ring-fire overflow-hidden rounded-2xl bg-muted">
+              <div className="ring-fire flex aspect-square items-center justify-center overflow-hidden rounded-2xl bg-[radial-gradient(circle_at_50%_45%,var(--color-secondary),var(--color-card)_70%)] p-4">
                 <img
                   src={item.imagem}
                   alt={item.nome}
-                  width={816}
-                  height={816}
                   loading={i < 4 ? "eager" : "lazy"}
-                  className="aspect-square w-full object-cover"
+                  className="h-full w-full object-contain drop-shadow-[0_10px_18px_rgb(0_0_0/0.45)]"
                 />
               </div>
               <p className="mt-3 text-center font-display text-sm font-bold uppercase leading-tight md:text-base">
