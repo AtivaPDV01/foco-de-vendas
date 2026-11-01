@@ -39,7 +39,8 @@ export function mesTemItemReduzido(mes: string) {
   return MESES_COM_ITEM_REDUZIDO.includes(mes.slice(0, 7));
 }
 
-const reais = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 3 });
+const reais = (v: number) =>
+  `R$ ${v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 3 })}`;
 
 /** Texto da regra de comissão do vendedor exibido no ranking daquele mês. */
 export function regraComissaoVendedor(mes: string) {
