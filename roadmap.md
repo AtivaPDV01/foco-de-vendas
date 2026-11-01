@@ -1,3 +1,5 @@
 - [x] Sincronização Mercaflow a cada 5 min
 - [x] Selo ao vivo com hora da última sincronização
 - [x] Aba Dia com filtros de data, loja e vendedor
+- [x] Campanha ATIVA PDV NOVEMBRO no sincronizador (todos os itens R$ 0,20 / R$ 0,05)
+- [x] Faixa com os itens da campanha de novembro na página inicial
