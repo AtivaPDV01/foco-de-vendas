@@ -5,13 +5,21 @@ import { somarDias } from "@/lib/datas";
 export const NOME_IMPORTACAO_MERCAFLOW = "Sincronização Mercaflow";
 
 /**
- * Produtos do Mercaflow (idProduto) que são o "item da campanha" e pagam comissão reduzida.
- * 18714 = AMENDOIM JAPONÊS MENDORATO 24G - SANTA HELENA.
+ * Produtos do Mercaflow (idProduto) que são o "item da campanha" e pagam comissão reduzida,
+ * por mês (AAAA-MM) de início da campanha. Meses fora da lista não têm item reduzido.
+ * Out/2026: 18714 = AMENDOIM JAPONÊS MENDORATO 24G - SANTA HELENA.
+ * Nov/2026: "ATIVA PDV NOVEMBRO" — todos os itens pagam o valor normal.
  */
-export const PRODUTOS_CAMPANHA_REDUZIDA = [18714];
+const PRODUTOS_REDUZIDOS_POR_MES: Record<string, number[]> = {
+  "2026-10": [18714],
+};
 
-/** Campanhas que entram na sincronização: o nome contém isto. */
-const NOME_CAMPANHA = "venda ativa pdv";
+export function produtosReduzidosDa(campanha: Pick<CampanhaMercaflow, "dataInicio">) {
+  return PRODUTOS_REDUZIDOS_POR_MES[campanha.dataInicio.slice(0, 7)] ?? [];
+}
+
+/** Campanhas que entram na sincronização: o nome contém isto ("Venda Ativa PDV Outubro", "ATIVA PDV NOVEMBRO"). */
+const NOME_CAMPANHA = "ativa pdv";
 /** Depois de encerrada, uma campanha continua sendo sincronizada por estes dias (lançamentos atrasados). */
 const DIAS_APOS_FIM = 3;
 

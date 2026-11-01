@@ -2,7 +2,7 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { hojeSP } from "@/lib/datas";
 import {
   montarLinhasMercaflow,
-  PRODUTOS_CAMPANHA_REDUZIDA,
+  produtosReduzidosDa,
   selecionarCampanhas,
   type CampanhaMercaflow,
   type OperadorMercaflow,
@@ -64,7 +64,7 @@ async function buscarDadosMercaflow() {
       const base = `/api/vendas/campanhas/${c.id}/vendas-diarias-operador`;
       const [total, ...itens] = await Promise.all([
         get<RespostaDiaria>(base, `as vendas de "${c.nome}"`),
-        ...PRODUTOS_CAMPANHA_REDUZIDA.map((p) =>
+        ...produtosReduzidosDa(c).map((p) =>
           get<RespostaDiaria>(`${base}?idProduto=${p}`, `o item da campanha em "${c.nome}"`),
         ),
       ]);
