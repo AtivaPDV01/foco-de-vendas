@@ -29,6 +29,31 @@ export function comissaoLoja(unidades: number, campanha = 0) {
   return comissao(unidades, campanha, COMISSAO_LOJA_POR_UNIDADE, COMISSAO_LOJA_CAMPANHA);
 }
 
+/**
+ * Meses (AAAA-MM) em que a campanha teve item com comissão reduzida.
+ * Out/2026: Mendorato pagava R$ 0,10. Nov/2026 em diante: todos os itens pagam o valor normal.
+ */
+const MESES_COM_ITEM_REDUZIDO = ["2026-10"];
+
+export function mesTemItemReduzido(mes: string) {
+  return MESES_COM_ITEM_REDUZIDO.includes(mes.slice(0, 7));
+}
+
+const reais = (v: number) =>
+  `R$ ${v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 3 })}`;
+
+/** Texto da regra de comissão do vendedor exibido no ranking daquele mês. */
+export function regraComissaoVendedor(mes: string) {
+  const base = `${reais(COMISSAO_VENDEDOR_POR_UNIDADE)} por unidade`;
+  return mesTemItemReduzido(mes) ? `${base} · ${reais(COMISSAO_VENDEDOR_CAMPANHA)} na campanha` : base;
+}
+
+/** Texto da regra de comissão da loja exibido no ranking daquele mês. */
+export function regraComissaoLoja(mes: string) {
+  const base = `${reais(COMISSAO_LOJA_POR_UNIDADE)} por unidade`;
+  return mesTemItemReduzido(mes) ? `${base} · ${reais(COMISSAO_LOJA_CAMPANHA)} na campanha` : base;
+}
+
 /** Percentual da meta atingido (0–100+, sem teto). */
 export function progressoMeta(total: number, meta: number | null | undefined) {
   if (!meta || meta <= 0) return 0;
