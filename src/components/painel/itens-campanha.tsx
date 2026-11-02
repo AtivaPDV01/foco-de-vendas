@@ -100,7 +100,10 @@ export function ItensCampanha({ campanha }: { campanha: Campanha }) {
               role="tab"
               aria-selected={ativo === i}
               aria-label={`Ir para ${item.nome}`}
-              onClick={() => irPara(i)}
+              onClick={() => {
+                marcarToque();
+                irPara(i);
+              }}
               className={cn(
                 "h-2 rounded-full transition-all",
                 ativo === i ? "bg-fire w-6" : "w-2 bg-muted-foreground/40",
