@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Sparkles } from "lucide-react";
 import type { Campanha } from "@/lib/campanhas";
 import { cn } from "@/lib/utils";
@@ -42,6 +42,25 @@ export function ItensCampanha({ campanha }: { campanha: Campanha }) {
   };
   const irPara = (i: number) => trilho.current?.scrollTo({ left: i * passo(), behavior: "smooth" });
 
+  // Avança sozinho; pausa enquanto o dedo está na tela e por alguns segundos depois.
+  const tocando = useRef(false);
+  const ultimoToque = useRef(0);
+  const marcarToque = () => {
+    ultimoToque.current = Date.now();
+  };
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const id = window.setInterval(() => {
+      const el = trilho.current;
+      if (!el || el.offsetParent === null) return; // escondido (computador)
+      if (tocando.current || Date.now() - ultimoToque.current < 3500) return;
+      const fim = el.scrollLeft + el.clientWidth >= el.scrollWidth - 4;
+      const atual = Math.round(el.scrollLeft / passo());
+      irPara(fim ? 0 : atual + 1);
+    }, 2500);
+    return () => window.clearInterval(id);
+  }, []);
+
   return (
     <section aria-label={`Itens da campanha ${campanha.nome}`} className="surface relative overflow-hidden py-4 md:py-5">
       <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 px-4 text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground md:px-6 md:text-xs md:tracking-[0.2em]">
@@ -53,6 +72,18 @@ export function ItensCampanha({ campanha }: { campanha: Campanha }) {
         <ul
           ref={trilho}
           onScroll={aoRolar}
+          onTouchStart={() => {
+            tocando.current = true;
+            marcarToque();
+          }}
+          onTouchEnd={() => {
+            tocando.current = false;
+            marcarToque();
+          }}
+          onTouchCancel={() => {
+            tocando.current = false;
+            marcarToque();
+          }}
           className="mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-px-4 px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
           {campanha.itens.map((item, i) => (
