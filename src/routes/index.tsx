@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useSuspenseQuery } from "@tanstack/react-query";
-import { ChevronLeft, ChevronRight, Upload } from "lucide-react";
+import { keepPreviousData, useQuery, useSuspenseQuery } from "@tanstack/react-query";
+import { ChevronLeft, ChevronRight, Store, Upload } from "lucide-react";
+import { useMemo } from "react";
 import { Marca, Rodape } from "@/components/marca";
 import {
   DestaqueCard,
@@ -12,17 +13,29 @@ import {
 } from "@/components/painel/painel";
 import { AbasPainel, SeloSincronizacao } from "@/components/painel/navegacao";
 import { ItensCampanha } from "@/components/painel/itens-campanha";
-import { campanhaDoMes } from "@/lib/campanhas";
-import { painelQuery } from "@/lib/painel.functions";
+import { CompartilharPodio } from "@/components/painel/compartilhar";
+import { DesempenhoProdutos } from "@/components/painel/produtos";
+import { selosDoRanking } from "@/lib/conquistas";
+import { campanhaQuery, painelQuery, produtosQuery } from "@/lib/painel.functions";
 import { dataBR, mesAtualSP, nomeMes, somarMes } from "@/lib/datas";
 
 export const Route = createFileRoute("/")({
-  validateSearch: (search: Record<string, unknown>): { mes?: string | undefined } => {
+  validateSearch: (search: Record<string, unknown>): { mes?: string | undefined; loja?: string | undefined } => {
     const mes = search["mes"];
-    return { mes: typeof mes === "string" && /^\d{4}-\d{2}$/.test(mes) ? mes : undefined };
+    const loja = search["loja"];
+    return {
+      mes: typeof mes === "string" && /^\d{4}-\d{2}$/.test(mes) ? mes : undefined,
+      loja: typeof loja === "string" && loja.trim() ? loja.slice(0, 200) : undefined,
+    };
   },
   loaderDeps: ({ search }) => ({ mes: search.mes }),
-  loader: ({ context, deps }) => context.queryClient.ensureQueryData(painelQuery(deps.mes)),
+  loader: async ({ context, deps }) => {
+    const mes = deps.mes ?? mesAtualSP();
+    await Promise.all([
+      context.queryClient.ensureQueryData(painelQuery(deps.mes)),
+      context.queryClient.ensureQueryData(campanhaQuery(mes)),
+    ]);
+  },
   head: () => ({
     meta: [
       { title: "Ranking de Vendas · Ativa PDV" },
@@ -43,10 +56,22 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
-  const { mes: mesBusca } = Route.useSearch();
+  const { mes: mesBusca, loja } = Route.useSearch();
+  const navigate = Route.useNavigate();
   const { data: painel } = useSuspenseQuery(painelQuery(mesBusca));
   const mes = painel.mes.slice(0, 7);
-  const campanha = campanhaDoMes(mes);
+  const { data: campanha } = useSuspenseQuery(campanhaQuery(mes));
+  const lojaValida = loja && painel.lojas.some((l) => l.loja === loja) ? loja : undefined;
+  const { data: produtos } = useQuery({ ...produtosQuery(mes, lojaValida), placeholderData: keepPreviousData });
+  const selos = useMemo(
+    () =>
+      selosDoRanking(painel.vendedores, {
+        destaqueDoDia: painel.destaque?.vendedor,
+        diasComVenda: painel.dias_com_venda,
+      }),
+    [painel],
+  );
+  const vendedores = lojaValida ? painel.vendedores.filter((v) => v.loja === lojaValida) : painel.vendedores;
   const anterior = somarMes(mes, -1);
   const proximo = somarMes(mes, 1);
   const podeAvancar = proximo <= mesAtualSP();
@@ -59,7 +84,7 @@ function Index() {
           <div className="flex items-center rounded-full border border-border bg-card/70 p-1">
             <Link
               to="/"
-              search={{ mes: anterior }}
+              search={{ mes: anterior, loja }}
               aria-label="Mês anterior"
               className="flex size-8 items-center justify-center rounded-full hover:bg-secondary"
             >
@@ -71,7 +96,7 @@ function Index() {
             {podeAvancar ? (
               <Link
                 to="/"
-                search={{ mes: proximo }}
+                search={{ mes: proximo, loja }}
                 aria-label="Próximo mês"
                 className="flex size-8 items-center justify-center rounded-full hover:bg-secondary"
               >
@@ -123,15 +148,62 @@ function Index() {
         <DestaqueCard destaque={painel.destaque} />
         <LojaDestaqueCard loja={painel.loja_destaque} />
       </div>
+      {painel.destaque && (
+        <div className="mt-4 flex flex-wrap items-center justify-end gap-3">
+          <p className="text-xs text-muted-foreground">Mande o pódio do dia no grupo da equipe</p>
+          <CompartilharPodio data={painel.destaque.data} />
+        </div>
+      )}
+
+      <section className="surface mt-8 flex flex-wrap items-center gap-3 p-4">
+        <Store className="size-4 text-sun" />
+        <label htmlFor="filtro-loja" className="text-sm font-bold">
+          Ver ranking da loja
+        </label>
+        <select
+          id="filtro-loja"
+          value={lojaValida ?? ""}
+          onChange={(e) => navigate({ search: (s) => ({ ...s, loja: e.target.value || undefined }), replace: true })}
+          className="h-10 min-w-52 flex-1 rounded-full border border-border bg-card/70 px-4 text-sm outline-none focus:border-sun sm:flex-none"
+        >
+          <option value="">Todas as lojas</option>
+          {painel.lojas.map((l) => (
+            <option key={l.loja} value={l.loja}>
+              {l.loja}
+            </option>
+          ))}
+        </select>
+        {lojaValida && (
+          <button
+            type="button"
+            onClick={() => navigate({ search: (s) => ({ ...s, loja: undefined }), replace: true })}
+            className="text-sm font-semibold text-muted-foreground hover:text-foreground"
+          >
+            Limpar filtro
+          </button>
+        )}
+      </section>
 
       <div className="mt-5">
-        <Podio vendedores={painel.vendedores} />
+        <Podio vendedores={vendedores} titulo={lojaValida ? `Pódio · ${lojaValida}` : "Pódio geral"} />
       </div>
 
       <div className="mt-5 grid gap-5 lg:grid-cols-[1.4fr_1fr]">
-        <RankingVendedores vendedores={painel.vendedores} mes={mes} />
+        <RankingVendedores
+          vendedores={vendedores}
+          mes={mes}
+          selos={selos}
+          titulo={lojaValida ? `Vendedores · ${lojaValida}` : "Ranking geral de vendedores"}
+          vazio={lojaValida ? "Sem vendas desta loja no mês." : "Sem vendas neste mês."}
+        />
         <RankingLojas lojas={painel.lojas} mes={mes} />
       </div>
+
+      {(produtos?.length || campanha?.itens.length) ? (
+        <div className="mt-5">
+          <DesempenhoProdutos campanha={campanha} vendas={produtos ?? []} loja={lojaValida} />
+        </div>
+      ) : null}
       <Rodape />
     </div>
   );

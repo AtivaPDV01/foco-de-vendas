@@ -112,3 +112,50 @@ export function montarLinhasMercaflow(
     (a, b) => a.data.localeCompare(b.data) || a.vendedor.localeCompare(b.vendedor),
   );
 }
+
+export type ProdutoCampanhaMercaflow = { idProduto: number; descricao: string };
+
+export type LinhaVendaProduto = {
+  data: string;
+  vendedor: string;
+  loja: string;
+  id_produto: number;
+  produto: string;
+  quantidade: number;
+};
+
+/** Produtos da campanha (vindos do detalhe da campanha no Mercaflow), sem repetidos. */
+export function produtosDaCampanha(detalhe: { produtos?: { idProduto?: unknown; descricao?: unknown }[] | null }) {
+  const vistos = new Map<number, ProdutoCampanhaMercaflow>();
+  for (const p of detalhe.produtos ?? []) {
+    const id = Number(p.idProduto);
+    if (!Number.isInteger(id) || id <= 0 || vistos.has(id)) continue;
+    vistos.set(id, { idProduto: id, descricao: String(p.descricao ?? "").replace(/\s+/g, " ").trim() || `Produto ${id}` });
+  }
+  return [...vistos.values()];
+}
+
+/** Uma linha por dia, vendedor e loja com as unidades de um produto da campanha. */
+export function montarLinhasProduto(
+  operadores: OperadorMercaflow[],
+  produto: ProdutoCampanhaMercaflow,
+  periodo?: { inicio: string; fim: string },
+): LinhaVendaProduto[] {
+  const linhas = new Map<string, LinhaVendaProduto>();
+  for (const o of operadores) {
+    const vendedor = formatarNome(o.nome);
+    const loja = formatarNome(o.lojaNome);
+    if (!vendedor || !loja) continue;
+    for (const [dia, valor] of Object.entries(o.perDia ?? {})) {
+      if (!ISO.test(dia)) continue;
+      if (periodo && (dia < periodo.inicio || dia > periodo.fim)) continue;
+      const q = unidades(valor);
+      if (q === 0) continue;
+      const k = `${dia}|${vendedor}|${loja}`;
+      const atual = linhas.get(k);
+      if (atual) atual.quantidade += q;
+      else linhas.set(k, { data: dia, vendedor, loja, id_produto: produto.idProduto, produto: produto.descricao, quantidade: q });
+    }
+  }
+  return [...linhas.values()];
+}

@@ -60,6 +60,44 @@ export function progressoMeta(total: number, meta: number | null | undefined) {
   return (total / meta) * 100;
 }
 
+export type Ritmo = {
+  diasDecorridos: number;
+  diasRestantes: number;
+  /** Média de unidades por dia até agora. */
+  ritmoAtual: number;
+  /** Unidades por dia necessárias nos dias que faltam (0 se a meta já foi batida). */
+  ritmoNecessario: number;
+  /** Total previsto no fim do mês mantendo o ritmo atual. */
+  projecao: number;
+  /** Projeção sobre a meta, em % (0 sem meta). */
+  projecaoPct: number;
+  situacao: "acima" | "no-ritmo" | "abaixo" | "batida" | "sem-meta";
+};
+
+/**
+ * Ritmo e projeção de fechamento do mês. O dia de hoje conta como dia decorrido
+ * e também como dia restante (ainda dá para vender nele).
+ * @param diaDeHoje dia do mês de hoje (1–31) no mês atual; para meses fechados passe o total de dias
+ */
+export function ritmoMeta(total: number, meta: number | null | undefined, diaDeHoje: number, diasDoMes: number): Ritmo {
+  const decorridos = Math.max(1, Math.min(diaDeHoje, diasDoMes));
+  const restantes = Math.max(diasDoMes - decorridos + 1, 0);
+  const ritmoAtual = total / decorridos;
+  const projecao = Math.round(ritmoAtual * diasDoMes);
+  const temMeta = !!meta && meta > 0;
+  const falta = temMeta ? Math.max(meta! - total, 0) : 0;
+  const ritmoNecessario = restantes > 0 ? Math.ceil(falta / restantes) : 0;
+  const projecaoPct = temMeta ? (projecao / meta!) * 100 : 0;
+  let situacao: Ritmo["situacao"] = "sem-meta";
+  if (temMeta) {
+    if (total >= meta!) situacao = "batida";
+    else if (projecaoPct >= 105) situacao = "acima";
+    else if (projecaoPct >= 95) situacao = "no-ritmo";
+    else situacao = "abaixo";
+  }
+  return { diasDecorridos: decorridos, diasRestantes: restantes, ritmoAtual, ritmoNecessario, projecao, projecaoPct, situacao };
+}
+
 const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
 const inteiro = new Intl.NumberFormat("pt-BR");
 

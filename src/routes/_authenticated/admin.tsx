@@ -13,6 +13,7 @@ import { lerLinhasPlanilha, type ResultadoPlanilha } from "@/lib/planilha";
 import { dataBR, hojeSP, mesAtualSP, nomeMes } from "@/lib/datas";
 import { comissaoVendedor, formatarBRL, formatarNumero } from "@/lib/comissao";
 import { sincronizarMercaflowAgora } from "@/lib/mercaflow.functions";
+import { CampanhasAdmin } from "@/components/admin/campanhas-admin";
 
 const adminQuery = queryOptions({
   queryKey: ["admin"],
@@ -93,7 +94,10 @@ function AdminPage() {
         </div>
       ) : (
         <div className="mt-8 grid gap-5 lg:grid-cols-[1.5fr_1fr]">
-          <Importar />
+          <div className="space-y-5">
+            <Importar />
+            <CampanhasAdmin />
+          </div>
           <div className="space-y-5">
             <Mercaflow sincronizacoes={data.sincronizacoes} />
             <Metas metas={data.metas} />
@@ -146,6 +150,7 @@ function Mercaflow({ sincronizacoes }: { sincronizacoes: Sincronizacao[] }) {
     } finally {
       setRodando(false);
       queryClient.invalidateQueries({ queryKey: ["painel"] });
+      queryClient.invalidateQueries({ queryKey: ["produtos"] });
       queryClient.invalidateQueries({ queryKey: ["admin"] });
     }
   }
@@ -188,7 +193,7 @@ function Mercaflow({ sincronizacoes }: { sincronizacoes: Sincronizacao[] }) {
         <RefreshCw className={rodando ? "animate-spin" : undefined} />
         {rodando ? "Sincronizando..." : "Sincronizar Mercaflow agora"}
       </Button>
-      <p className="mt-2 text-xs text-muted-foreground">Também sincroniza sozinho a cada 30 minutos.</p>
+      <p className="mt-2 text-xs text-muted-foreground">Também sincroniza sozinho a cada 5 minutos.</p>
     </section>
   );
 }

@@ -14,6 +14,68 @@ export type Database = {
   }
   public: {
     Tables: {
+      campanha_produtos: {
+        Row: {
+          campanha_id: string
+          created_at: string
+          id: string
+          id_produto_mercaflow: number | null
+          imagem_url: string | null
+          meta: number | null
+          nome: string
+          ordem: number
+        }
+        Insert: {
+          campanha_id: string
+          created_at?: string
+          id?: string
+          id_produto_mercaflow?: number | null
+          imagem_url?: string | null
+          meta?: number | null
+          nome: string
+          ordem?: number
+        }
+        Update: {
+          campanha_id?: string
+          created_at?: string
+          id?: string
+          id_produto_mercaflow?: number | null
+          imagem_url?: string | null
+          meta?: number | null
+          nome?: string
+          ordem?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campanha_produtos_campanha_id_fkey"
+            columns: ["campanha_id"]
+            isOneToOne: false
+            referencedRelation: "campanhas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      campanhas: {
+        Row: {
+          created_at: string
+          id: string
+          mes: string
+          nome: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          mes: string
+          nome: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          mes?: string
+          nome?: string
+        }
+        Relationships: []
+      }
       importacoes: {
         Row: {
           arquivo: string
@@ -154,6 +216,33 @@ export type Database = {
           },
         ]
       }
+      vendas_produto: {
+        Row: {
+          data: string
+          id_produto: number
+          loja: string
+          produto: string
+          quantidade: number
+          vendedor: string
+        }
+        Insert: {
+          data: string
+          id_produto: number
+          loja: string
+          produto: string
+          quantidade: number
+          vendedor: string
+        }
+        Update: {
+          data?: string
+          id_produto?: number
+          loja?: string
+          produto?: string
+          quantidade?: number
+          vendedor?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -161,6 +250,14 @@ export type Database = {
     Functions: {
       aplicar_sincronizacao_mercaflow: {
         Args: { _linhas: Json; _periodos: Json }
+        Returns: Json
+      }
+      aplicar_vendas_produto: {
+        Args: { _linhas: Json; _periodos: Json }
+        Returns: number
+      }
+      extrato_vendedor: {
+        Args: { _mes: string; _vendedor: string }
         Returns: Json
       }
       has_role: {
@@ -172,6 +269,7 @@ export type Database = {
       }
       painel_dia: { Args: { _data: string }; Returns: Json }
       painel_mes: { Args: { _mes: string }; Returns: Json }
+      painel_produtos: { Args: { _loja?: string; _mes: string }; Returns: Json }
       ultima_sincronizacao: { Args: never; Returns: string }
     }
     Enums: {

@@ -56,3 +56,30 @@ describe("linhas vindas do Mercaflow", () => {
     expect(linhas.map((l) => [l.data, l.quantidade])).toEqual([["2026-10-21", 5]]);
   });
 });
+
+describe("venda por produto da campanha", () => {
+  it("lê os produtos do detalhe da campanha sem repetir", async () => {
+    const { produtosDaCampanha } = await import("@/lib/mercaflow");
+    expect(
+      produtosDaCampanha({
+        produtos: [
+          { idProduto: 200, descricao: "BOMBOM OURO BRANCO 20G - LACTA" },
+          { idProduto: 200, descricao: "repetido" },
+          { idProduto: "x", descricao: "inválido" },
+        ],
+      }),
+    ).toEqual([{ idProduto: 200, descricao: "BOMBOM OURO BRANCO 20G - LACTA" }]);
+  });
+
+  it("gera uma linha por dia, vendedor e loja com nomes iguais aos do ranking", async () => {
+    const { montarLinhasProduto } = await import("@/lib/mercaflow");
+    const linhas = montarLinhasProduto(
+      [{ matricula: 1, nome: "WILLIANE FERREIRA DE LIMA", lojaExternalId: 2, lojaNome: "08 BARAO GERALDO", perDia: { "2026-11-02": 51, "2026-10-31": 4 } }],
+      { idProduto: 200, descricao: "BOMBOM OURO BRANCO 20G - LACTA" },
+      { inicio: "2026-11-01", fim: "2026-11-30" },
+    );
+    expect(linhas).toEqual([
+      { data: "2026-11-02", vendedor: "Williane Ferreira de Lima", loja: "08 Barao Geraldo", id_produto: 200, produto: "BOMBOM OURO BRANCO 20G - LACTA", quantidade: 51 },
+    ]);
+  });
+});
