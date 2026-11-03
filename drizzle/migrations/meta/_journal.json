@@ -36,6 +36,13 @@
       "when": 1793670115823,
       "tag": "0004_campanhas_produtos_e_extrato",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1793670157901,
+      "tag": "0005_fotos_produto_leitura_admin",
+      "breakpoints": true
     }
   ]
 }
