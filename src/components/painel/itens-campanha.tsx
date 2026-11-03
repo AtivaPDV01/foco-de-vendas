@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { Sparkles } from "lucide-react";
-import type { Campanha } from "@/lib/campanhas";
+import { Package, Sparkles } from "lucide-react";
+import type { Campanha } from "@/lib/painel.functions";
 import { cn } from "@/lib/utils";
 
 type Item = Campanha["itens"][number];
@@ -9,12 +9,16 @@ function Cartao({ item, eager }: { item: Item; eager: boolean }) {
   return (
     <>
       <div className="ring-fire flex aspect-square items-center justify-center overflow-hidden rounded-2xl bg-[radial-gradient(circle_at_50%_45%,var(--color-secondary),var(--color-card)_70%)] p-2.5 md:p-4">
-        <img
-          src={item.imagem}
-          alt={item.nome}
-          loading={eager ? "eager" : "lazy"}
-          className="h-full w-full object-contain drop-shadow-[0_10px_18px_rgb(0_0_0/0.45)]"
-        />
+        {item.imagem ? (
+          <img
+            src={item.imagem}
+            alt={item.nome}
+            loading={eager ? "eager" : "lazy"}
+            className="h-full w-full object-contain drop-shadow-[0_10px_18px_rgb(0_0_0/0.45)]"
+          />
+        ) : (
+          <Package className="size-1/3 text-muted-foreground" aria-hidden />
+        )}
       </div>
       <p className="mt-2 line-clamp-2 min-h-[2.5em] text-center font-display text-[11px] font-bold uppercase leading-tight md:mt-3 md:text-base">
         {item.nome}
@@ -87,7 +91,7 @@ export function ItensCampanha({ campanha }: { campanha: Campanha }) {
           className="mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-px-4 px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
           {campanha.itens.map((item, i) => (
-            <li key={item.nome} className="w-[38%] shrink-0 snap-start">
+            <li key={item.id} className="w-[38%] shrink-0 snap-start">
               <Cartao item={item} eager={i < 3} />
             </li>
           ))}
@@ -95,7 +99,7 @@ export function ItensCampanha({ campanha }: { campanha: Campanha }) {
         <div className="mt-3 flex justify-center gap-1.5" role="tablist" aria-label="Posição no carrossel">
           {campanha.itens.map((item, i) => (
             <button
-              key={item.nome}
+              key={item.id}
               type="button"
               role="tab"
               aria-selected={ativo === i}
@@ -117,7 +121,7 @@ export function ItensCampanha({ campanha }: { campanha: Campanha }) {
       <div className="relative mt-4 hidden overflow-hidden [mask-image:linear-gradient(to_right,transparent,#000_4%,#000_96%,transparent)] md:block">
         <ul className="animate-marquee flex w-max gap-4 px-2">
           {itens.map((item, i) => (
-            <li key={`${item.nome}-${i}`} aria-hidden={i >= campanha.itens.length} className="w-52 shrink-0">
+            <li key={`${item.id}-${i}`} aria-hidden={i >= campanha.itens.length} className="w-52 shrink-0">
               <Cartao item={item} eager={i < 4} />
             </li>
           ))}

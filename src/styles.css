@@ -45,6 +45,7 @@
   --color-gold: var(--gold);
   --color-silver: var(--silver);
   --color-bronze: var(--bronze);
+  --color-diamond: var(--diamond);
   --color-success: var(--success);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
@@ -89,6 +90,7 @@
   --gold: oklch(0.86 0.16 88);
   --silver: oklch(0.84 0.015 260);
   --bronze: oklch(0.68 0.12 55);
+  --diamond: oklch(0.84 0.11 215);
   --success: oklch(0.78 0.17 145);
 
   --gradient-fire: linear-gradient(115deg, var(--flame) 0%, var(--ember) 50%, var(--sun) 100%);
