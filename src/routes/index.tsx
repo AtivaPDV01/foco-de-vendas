@@ -61,7 +61,8 @@ function Index() {
   const { data: painel } = useSuspenseQuery(painelQuery(mesBusca));
   const mes = painel.mes.slice(0, 7);
   const { data: campanha } = useSuspenseQuery(campanhaQuery(mes));
-  const { data: produtos } = useQuery({ ...produtosQuery(mes, loja), placeholderData: keepPreviousData });
+  const lojaValida = loja && painel.lojas.some((l) => l.loja === loja) ? loja : undefined;
+  const { data: produtos } = useQuery({ ...produtosQuery(mes, lojaValida), placeholderData: keepPreviousData });
   const selos = useMemo(
     () =>
       selosDoRanking(painel.vendedores, {
@@ -70,8 +71,7 @@ function Index() {
       }),
     [painel],
   );
-  const vendedores = loja ? painel.vendedores.filter((v) => v.loja === loja) : painel.vendedores;
-  const lojaValida = loja && painel.lojas.some((l) => l.loja === loja) ? loja : undefined;
+  const vendedores = lojaValida ? painel.vendedores.filter((v) => v.loja === lojaValida) : painel.vendedores;
   const anterior = somarMes(mes, -1);
   const proximo = somarMes(mes, 1);
   const podeAvancar = proximo <= mesAtualSP();

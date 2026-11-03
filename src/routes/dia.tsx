@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { Marca, Rodape } from "@/components/marca";
 import { RankingLojas, RankingVendedores } from "@/components/painel/painel";
 import { AbasPainel, SeloSincronizacao } from "@/components/painel/navegacao";
+import { CompartilharPodio } from "@/components/painel/compartilhar";
 import { painelDiaQuery } from "@/lib/painel.functions";
 import { comissaoVendedor, formatarBRL, formatarNumero } from "@/lib/comissao";
 import { dataBR, diaDaSemana, hojeSP, somarDias } from "@/lib/datas";
@@ -68,14 +69,17 @@ function Dia() {
         <SeloSincronizacao />
       </div>
 
-      <div className="mt-8">
-        <h1 className="font-display text-3xl font-black uppercase leading-[1.05] md:text-6xl">
-          Vendas do <span className="text-fire">dia</span>
-        </h1>
-        <p className="mt-3 text-sm text-muted-foreground">
-          {diaDaSemana(data)}, {dataBR(data)}
-          {data === hoje && " · hoje"}
-        </p>
+      <div className="mt-8 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="font-display text-3xl font-black uppercase leading-[1.05] md:text-6xl">
+            Vendas do <span className="text-fire">dia</span>
+          </h1>
+          <p className="mt-3 text-sm text-muted-foreground">
+            {diaDaSemana(data)}, {dataBR(data)}
+            {data === hoje && " · hoje"}
+          </p>
+        </div>
+        {dia.vendedores.length > 0 && <CompartilharPodio data={data} />}
       </div>
 
       <section className="surface mt-8 flex flex-wrap items-center gap-3 p-4">

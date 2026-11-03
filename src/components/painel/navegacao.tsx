@@ -5,8 +5,8 @@ import { ultimaSincronizacaoQuery } from "@/lib/painel.functions";
 import { cn } from "@/lib/utils";
 
 /** Abas no topo: visão do mês e visão do dia. */
-export function AbasPainel({ ativa }: { ativa: "mes" | "dia" }) {
-  const base = "rounded-full px-5 py-2 text-sm font-bold transition-colors";
+export function AbasPainel({ ativa }: { ativa: "mes" | "dia" | "extrato" }) {
+  const base = "rounded-full px-4 py-2 text-sm font-bold transition-colors sm:px-5";
   return (
     <nav aria-label="Visão do painel" className="inline-flex rounded-full border border-border bg-card/70 p-1">
       <Link to="/" className={cn(base, ativa === "mes" ? "bg-fire text-primary-foreground" : "text-muted-foreground hover:text-foreground")}>
@@ -14,6 +14,9 @@ export function AbasPainel({ ativa }: { ativa: "mes" | "dia" }) {
       </Link>
       <Link to="/dia" className={cn(base, ativa === "dia" ? "bg-fire text-primary-foreground" : "text-muted-foreground hover:text-foreground")}>
         Dia
+      </Link>
+      <Link to="/extrato" className={cn(base, ativa === "extrato" ? "bg-fire text-primary-foreground" : "text-muted-foreground hover:text-foreground")}>
+        Meu extrato
       </Link>
     </nav>
   );
