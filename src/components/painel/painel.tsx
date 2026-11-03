@@ -27,19 +27,38 @@ function corPosicao(i: number) {
   return ["text-gold", "text-silver", "text-bronze"][i] ?? "text-muted-foreground";
 }
 
+const SITUACAO: Record<Ritmo["situacao"], { rotulo: string; classe: string }> = {
+  acima: { rotulo: "Acima do ritmo", classe: "bg-success/15 text-success" },
+  "no-ritmo": { rotulo: "No ritmo", classe: "bg-sun/15 text-sun" },
+  abaixo: { rotulo: "Abaixo do ritmo", classe: "bg-flame/15 text-flame" },
+  batida: { rotulo: "Meta batida", classe: "bg-success/15 text-success" },
+  "sem-meta": { rotulo: "", classe: "" },
+};
+
 export function MetaCard({ painel }: { painel: Painel }) {
   const mes = painel.mes.slice(0, 7);
   const pct = progressoMeta(painel.total, painel.meta);
   const restante = painel.meta ? Math.max(painel.meta - painel.total, 0) : 0;
-  const ehMesAtual = mes === mesAtualSP();
-  const diasRestantes = ehMesAtual ? diasNoMes(mes) - Number(hojeSP().slice(8, 10)) + 1 : 0;
-  const porDia = diasRestantes > 0 ? Math.ceil(restante / diasRestantes) : 0;
+  const atual = mesAtualSP();
+  const ehMesAtual = mes === atual;
+  const fechado = mes < atual;
+  const totalDias = diasNoMes(mes);
+  const ritmo = ritmoMeta(painel.total, painel.meta, ehMesAtual ? Number(hojeSP().slice(8, 10)) : totalDias, totalDias);
   const batida = painel.meta !== null && painel.total >= painel.meta;
+  // Termômetro: ritmo atual em relação ao necessário (100% = no ritmo exato).
+  const temperatura =
+    batida ? 100 : ritmo.ritmoNecessario > 0 ? Math.min((ritmo.ritmoAtual / ritmo.ritmoNecessario) * 100, 100) : 0;
+  const situacao = SITUACAO[ritmo.situacao];
 
   return (
     <section className="surface glow relative overflow-hidden p-6 md:p-8 animate-rise">
-      <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
-        <Target className="size-4 text-sun" /> Meta geral do mês
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
+          <Target className="size-4 text-sun" /> Meta geral do mês
+        </div>
+        {painel.meta && ehMesAtual ? (
+          <span className={cn("rounded-full px-3 py-1 text-xs font-bold", situacao.classe)}>{situacao.rotulo}</span>
+        ) : null}
       </div>
 
       <div className="mt-5 flex flex-wrap items-end justify-between gap-4">
@@ -71,6 +90,13 @@ export function MetaCard({ painel }: { painel: Painel }) {
               className="bg-fire animate-shine h-full rounded-full transition-[width] duration-1000"
               style={{ width: `${Math.min(pct, 100)}%` }}
             />
+            {ehMesAtual && !batida && ritmo.projecaoPct > 0 && (
+              <span
+                className="absolute top-0 h-full w-1 rounded-full bg-foreground/80"
+                style={{ left: `calc(${Math.min(ritmo.projecaoPct, 100)}% - 2px)` }}
+                title="Projeção de fechamento"
+              />
+            )}
             {[25, 50, 75].map((m) => (
               <span
                 key={m}
@@ -86,26 +112,57 @@ export function MetaCard({ painel }: { painel: Painel }) {
             <span>75%</span>
             <span>100%</span>
           </div>
-          <div className="mt-5 grid gap-3 sm:grid-cols-2">
-            <div className="rounded-xl bg-muted/60 px-4 py-3">
-              <p className="text-xs text-muted-foreground">
-                {batida ? "Meta batida! Excedente" : "Faltam"}
-              </p>
-              <p className="font-display text-xl font-bold">
-                {formatarNumero(batida ? painel.total - painel.meta! : restante)} un.
-              </p>
-            </div>
-            <div className="rounded-xl bg-muted/60 px-4 py-3">
-              <p className="text-xs text-muted-foreground">
-                {ehMesAtual && !batida ? "Ritmo necessário" : "Dias restantes"}
-              </p>
-              <p className="font-display text-xl font-bold">
-                {ehMesAtual && !batida
-                  ? `${formatarNumero(porDia)} un./dia`
-                  : `${ehMesAtual ? diasRestantes : 0} dias`}
-              </p>
-            </div>
-          </div>
+
+          {ehMesAtual ? (
+            <>
+              <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                <Caixa
+                  rotulo={batida ? "Meta batida! Excedente" : "Faltam"}
+                  valor={`${formatarNumero(batida ? painel.total - painel.meta : restante)} un.`}
+                />
+                <Caixa rotulo="Ritmo atual" valor={`${formatarNumero(Math.round(ritmo.ritmoAtual))} un./dia`} />
+                <Caixa
+                  rotulo={batida ? "Dias restantes" : "Ritmo necessário"}
+                  valor={batida ? `${ritmo.diasRestantes} dias` : `${formatarNumero(ritmo.ritmoNecessario)} un./dia`}
+                />
+              </div>
+
+              <div className="mt-5 grid items-center gap-5 rounded-2xl bg-muted/40 p-4 sm:grid-cols-[1fr_auto]">
+                <div>
+                  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                    <Thermometer className="size-4 text-ember" /> Termômetro de ritmo
+                  </div>
+                  <div className="relative mt-3 h-3 rounded-full bg-[linear-gradient(90deg,var(--color-flame),var(--color-ember),var(--color-sun),var(--color-success))]">
+                    <span
+                      className="absolute top-1/2 size-5 -translate-x-1/2 -translate-y-1/2 rounded-full border-4 border-background bg-foreground shadow transition-[left] duration-1000"
+                      style={{ left: `${temperatura}%` }}
+                    />
+                  </div>
+                  <div className="mt-1.5 flex justify-between text-[11px] font-semibold text-muted-foreground">
+                    <span>Frio</span>
+                    <span>No ritmo da meta</span>
+                  </div>
+                </div>
+                <div className="sm:border-l sm:border-border sm:pl-5 sm:text-right">
+                  <p className="text-xs text-muted-foreground">Projeção de fechamento</p>
+                  <p className="font-display text-2xl font-extrabold">
+                    {formatarNumero(ritmo.projecao)} <span className="text-sm font-semibold text-muted-foreground">un.</span>
+                  </p>
+                  <p className="text-xs font-bold text-sun">
+                    {ritmo.projecaoPct.toLocaleString("pt-BR", { maximumFractionDigits: 0 })}% da meta
+                  </p>
+                </div>
+              </div>
+            </>
+          ) : (
+            <p className="mt-5 rounded-xl bg-muted/60 px-4 py-3 text-sm">
+              {fechado
+                ? batida
+                  ? `Meta batida! Fechou com ${formatarNumero(painel.total - painel.meta)} un. acima.`
+                  : `Fechou faltando ${formatarNumero(restante)} un. para a meta.`
+                : "Este mês ainda não começou."}
+            </p>
+          )}
         </>
       ) : (
         <p className="mt-6 rounded-xl border border-dashed border-border px-4 py-3 text-sm text-muted-foreground">
@@ -113,6 +170,53 @@ export function MetaCard({ painel }: { painel: Painel }) {
         </p>
       )}
     </section>
+  );
+}
+
+function Caixa({ rotulo, valor }: { rotulo: string; valor: string }) {
+  return (
+    <div className="rounded-xl bg-muted/60 px-4 py-3">
+      <p className="text-xs text-muted-foreground">{rotulo}</p>
+      <p className="font-display text-xl font-bold">{valor}</p>
+    </div>
+  );
+}
+
+const ESTILO_SELO: Record<string, string> = {
+  bronze: "border-bronze/50 bg-bronze/15 text-bronze",
+  prata: "border-silver/50 bg-silver/15 text-silver",
+  ouro: "border-gold/50 bg-gold/15 text-gold",
+  diamante: "border-diamond/50 bg-diamond/15 text-diamond",
+  destaque: "border-flame/50 bg-flame/15 text-flame",
+  "lider-loja": "border-ember/50 bg-ember/15 text-ember",
+  constante: "border-success/50 bg-success/15 text-success",
+};
+
+function IconeSelo({ selo }: { selo: Selo }) {
+  const c = "size-3";
+  if (selo.id === "faixa") return selo.faixa === "diamante" ? <Gem className={c} /> : <Medal className={c} />;
+  if (selo.id === "destaque") return <Flame className={c} />;
+  if (selo.id === "lider-loja") return <Crown className={c} />;
+  return <CalendarCheck className={c} />;
+}
+
+export function Selos({ selos, className }: { selos: Selo[] | undefined; className?: string }) {
+  if (!selos?.length) return null;
+  return (
+    <span className={cn("flex flex-wrap gap-1", className)}>
+      {selos.map((s) => (
+        <span
+          key={s.id}
+          className={cn(
+            "inline-flex items-center gap-1 rounded-full border px-1.5 py-0.5 text-[10px] font-bold leading-none",
+            ESTILO_SELO[s.faixa ?? s.id],
+          )}
+        >
+          <IconeSelo selo={s} />
+          {s.rotulo}
+        </span>
+      ))}
+    </span>
   );
 }
 
