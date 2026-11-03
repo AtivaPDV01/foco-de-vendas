@@ -9,7 +9,7 @@ import { Slider } from "@/components/ui/slider";
 import { comissaoVendedor, formatarBRL, formatarNumero, ritmoMeta } from "@/lib/comissao";
 import { FAIXAS, faixaDe, posicaoCom, proximaFaixa, selosDoRanking } from "@/lib/conquistas";
 import { dataBR, diaDaSemana, diasNoMes, hojeSP, mesAtualSP, nomeMes, somarMes } from "@/lib/datas";
-import { extratoQuery, painelQuery } from "@/lib/painel.functions";
+import { extratoQuery, painelQuery, type Painel } from "@/lib/painel.functions";
 import { cn } from "@/lib/utils";
 
 const CHAVE_NOME = "ativa-pdv:meu-nome";
@@ -131,7 +131,7 @@ function ExtratoPage() {
         aoEscolher={escolher}
       />
 
-      {busca.vendedor && <Extrato vendedor={busca.vendedor} mes={mes} />}
+      {busca.vendedor && <Extrato vendedor={busca.vendedor} mes={mes} painel={painel} />}
       <Rodape />
     </div>
   );
@@ -226,9 +226,8 @@ function EscolherVendedor({
   );
 }
 
-function Extrato({ vendedor, mes }: { vendedor: string; mes: string }) {
+function Extrato({ vendedor, mes, painel }: { vendedor: string; mes: string; painel: Painel }) {
   const { data: extrato } = useQuery(extratoQuery(mes, vendedor));
-  const { data: painel } = useSuspenseQuery(painelQuery(mes === mesAtualSP() ? undefined : mes));
   const [extra, setExtra] = useState(100);
 
   if (!extrato) return null;
