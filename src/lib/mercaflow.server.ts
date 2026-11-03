@@ -2,10 +2,14 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { hojeSP } from "@/lib/datas";
 import {
   montarLinhasMercaflow,
+  montarLinhasProduto,
+  produtosDaCampanha,
   produtosReduzidosDa,
   selecionarCampanhas,
   type CampanhaMercaflow,
+  type LinhaVendaProduto,
   type OperadorMercaflow,
+  type ProdutoCampanhaMercaflow,
 } from "@/lib/mercaflow";
 import type { LinhaVenda } from "@/lib/planilha";
 
@@ -51,31 +55,67 @@ async function entrar() {
 
 type RespostaDiaria = { operadores?: OperadorMercaflow[] };
 
-async function buscarDadosMercaflow() {
-  const cookie = await entrar();
-  const get = <T>(path: string, oQue: string) =>
-    fetch(`${BASE}${path}`, { headers: { cookie, accept: "application/json" } }).then((r) => lerJson<T>(r, oQue));
+type DetalheCampanha = { produtos?: { idProduto?: unknown; descricao?: unknown }[] | null };
 
+async function sessaoMercaflow() {
+  const cookie = await entrar();
+  return <T>(path: string, oQue: string) =>
+    fetch(`${BASE}${path}`, { headers: { cookie, accept: "application/json" } }).then((r) => lerJson<T>(r, oQue));
+}
+
+async function buscarDadosMercaflow() {
+  const get = await sessaoMercaflow();
   const todas = await get<CampanhaMercaflow[]>("/api/vendas/campanhas", "a lista de campanhas");
   const campanhas = selecionarCampanhas(todas, hojeSP());
 
   const porCampanha = await Promise.all(
     campanhas.map(async (c) => {
       const base = `/api/vendas/campanhas/${c.id}/vendas-diarias-operador`;
-      const [total, ...itens] = await Promise.all([
+      const periodo = { inicio: c.dataInicio, fim: c.dataFim };
+      const [total, detalhe] = await Promise.all([
         get<RespostaDiaria>(base, `as vendas de "${c.nome}"`),
-        ...produtosReduzidosDa(c).map((p) =>
-          get<RespostaDiaria>(`${base}?idProduto=${p}`, `o item da campanha em "${c.nome}"`),
-        ),
+        get<DetalheCampanha>(`/api/vendas/campanhas/${c.id}`, `os produtos de "${c.nome}"`),
       ]);
-      return montarLinhasMercaflow(
-        total.operadores ?? [],
-        itens.flatMap((i) => i.operadores ?? []),
-        { inicio: c.dataInicio, fim: c.dataFim },
+      const produtos = produtosDaCampanha(detalhe);
+      const reduzidos = produtosReduzidosDa(c);
+      // Venda de cada produto da campanha (também usada para separar o item com comissão reduzida).
+      const ids = [...new Set([...produtos.map((p) => p.idProduto), ...reduzidos])];
+      const porProduto = new Map<number, OperadorMercaflow[]>();
+      await Promise.all(
+        ids.map(async (id) => {
+          const r = await get<RespostaDiaria>(`${base}?idProduto=${id}`, `o produto ${id} em "${c.nome}"`);
+          porProduto.set(id, r.operadores ?? []);
+        }),
       );
+      const linhas = montarLinhasMercaflow(
+        total.operadores ?? [],
+        reduzidos.flatMap((id) => porProduto.get(id) ?? []),
+        periodo,
+      );
+      const linhasProduto = produtos.flatMap((p: ProdutoCampanhaMercaflow) =>
+        montarLinhasProduto(porProduto.get(p.idProduto) ?? [], p, periodo),
+      );
+      return { linhas, linhasProduto };
     }),
   );
-  return { campanhas, linhas: porCampanha.flat() };
+  return {
+    campanhas,
+    linhas: porCampanha.flatMap((p) => p.linhas),
+    linhasProduto: porCampanha.flatMap((p) => p.linhasProduto),
+  };
+}
+
+/** Produtos das campanhas Ativa PDV do mês no Mercaflow (para o cadastro de campanhas no /admin). */
+export async function listarProdutosMercaflow() {
+  const get = await sessaoMercaflow();
+  const todas = await get<CampanhaMercaflow[]>("/api/vendas/campanhas", "a lista de campanhas");
+  const campanhas = selecionarCampanhas(todas, hojeSP());
+  const detalhes = await Promise.all(
+    campanhas.map((c) => get<DetalheCampanha>(`/api/vendas/campanhas/${c.id}`, `os produtos de "${c.nome}"`)),
+  );
+  const vistos = new Map<number, ProdutoCampanhaMercaflow>();
+  for (const d of detalhes) for (const p of produtosDaCampanha(d)) vistos.set(p.idProduto, p);
+  return [...vistos.values()].sort((a, b) => a.descricao.localeCompare(b.descricao));
 }
 
 /** Busca as vendas no Mercaflow e substitui as da "Sincronização Mercaflow". Registra o resultado. */
@@ -95,7 +135,7 @@ export async function sincronizarMercaflow(gatilho: "manual" | "automatico"): Pr
   };
 
   try {
-    const { campanhas, linhas } = await buscarDadosMercaflow();
+    const { campanhas, linhas, linhasProduto } = await buscarDadosMercaflow();
     const nomes = campanhas.map((c) => c.nome);
     if (campanhas.length === 0) {
       await concluir({ status: "ok", linhas: 0, unidades: 0, campanhas: [], mensagem: "Nenhuma campanha Venda Ativa PDV no mês." });
@@ -109,6 +149,13 @@ export async function sincronizarMercaflow(gatilho: "manual" | "automatico"): Pr
       console.error("Falha ao gravar a sincronização:", error.message);
       throw new Error("Não foi possível gravar as vendas sincronizadas.");
     }
+    const periodos = campanhas.map((c) => ({ inicio: c.dataInicio, fim: c.dataFim }));
+    const { error: erroProdutos } = await supabaseAdmin.rpc("aplicar_vendas_produto", {
+      _periodos: periodos,
+      _linhas: linhasProduto satisfies LinhaVendaProduto[],
+    });
+    // A venda por produto é complementar: se falhar, o ranking continua atualizado.
+    if (erroProdutos) console.error("Falha ao gravar a venda por produto:", erroProdutos.message);
     const unidades = linhas.reduce((s, l) => s + l.quantidade, 0);
     await concluir({ status: "ok", linhas: linhas.length, unidades, campanhas: nomes, mensagem: null });
     return { ok: true, linhas: linhas.length, unidades, campanhas: nomes };
