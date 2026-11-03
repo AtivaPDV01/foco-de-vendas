@@ -1,4 +1,5 @@
-import { Crown, Flame, Store, Target, Trophy, Users } from "lucide-react";
+import type React from "react";
+import { CalendarCheck, Crown, Flame, Gem, Medal, Store, Target, Thermometer, Trophy, Users } from "lucide-react";
 import {
   comissaoLoja,
   comissaoVendedor,
@@ -7,7 +8,10 @@ import {
   progressoMeta,
   regraComissaoLoja,
   regraComissaoVendedor,
+  ritmoMeta,
+  type Ritmo,
 } from "@/lib/comissao";
+import type { Selo } from "@/lib/conquistas";
 import { dataBR, diaDaSemana, diasNoMes, hojeSP, mesAtualSP, somarDias } from "@/lib/datas";
 import type { Destaque, LojaDestaque, LojaRanking, Painel, VendedorRanking } from "@/lib/painel.functions";
 import { cn } from "@/lib/utils";
@@ -314,7 +318,15 @@ export function LojaDestaqueCard({ loja }: { loja: LojaDestaque | null }) {
   );
 }
 
-export function Podio({ vendedores }: { vendedores: VendedorRanking[] }) {
+export function Podio({
+  vendedores,
+  titulo = "Pódio geral",
+  acao,
+}: {
+  vendedores: VendedorRanking[];
+  titulo?: string;
+  acao?: React.ReactNode;
+}) {
   const top = vendedores.slice(0, 3);
   // Ordem visual: 2º, 1º, 3º
   const ordem = [1, 0, 2].filter((i) => top[i]);
@@ -322,8 +334,11 @@ export function Podio({ vendedores }: { vendedores: VendedorRanking[] }) {
 
   return (
     <section className="surface p-6 md:p-8">
-      <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
-        <Trophy className="size-4 text-gold" /> Pódio geral
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
+          <Trophy className="size-4 text-gold" /> {titulo}
+        </div>
+        {acao}
       </div>
       {top.length === 0 ? (
         <p className="mt-6 text-sm text-muted-foreground">O pódio aparece assim que houver vendas no mês.</p>
@@ -386,8 +401,11 @@ export function RankingVendedores({
   mes,
   titulo = "Ranking geral de vendedores",
   vazio = "Sem vendas neste mês.",
+  selos,
 }: {
   vendedores: VendedorRanking[];
+  /** Selos de conquista por vendedor. */
+  selos?: Map<string, Selo[]>;
   /** Mês (AAAA-MM) exibido, para mostrar a regra de comissão daquele mês. */
   mes: string;
   titulo?: string;
@@ -431,6 +449,7 @@ export function RankingVendedores({
                 <div className="min-w-0">
                   <p className="truncate font-semibold">{v.vendedor}</p>
                   <p className="truncate text-xs text-muted-foreground">{v.loja}</p>
+                  <Selos selos={selos?.get(v.vendedor)} className="mt-1" />
                 </div>
               </div>
               <div className="text-right sm:contents">
