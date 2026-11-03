@@ -35,7 +35,7 @@ export function DesempenhoProdutos({
 }: {
   campanha: Campanha | null;
   vendas: ProdutoDesempenho[];
-  loja?: string;
+  loja?: string | undefined;
 }) {
   const linhas = juntarProdutos(campanha, vendas);
   if (!linhas.length) return null;

@@ -66,11 +66,17 @@ export function CampanhasAdmin() {
   async function salvarCampanha(e: FormEvent) {
     e.preventDefault();
     const n = nome.trim();
-    if (!n) return toast.error("Dê um nome para a campanha.");
+    if (!n) {
+      toast.error("Dê um nome para a campanha.");
+      return;
+    }
     const { error } = campanha
       ? await supabase.from("campanhas").update({ nome: n }).eq("id", campanha.id)
       : await supabase.from("campanhas").insert({ mes: `${mes}-01`, nome: n });
-    if (error) return toast.error("Não foi possível salvar a campanha.");
+    if (error) {
+      toast.error("Não foi possível salvar a campanha.");
+      return;
+    }
     toast.success(campanha ? "Campanha atualizada." : `Campanha de ${nomeMes(mes)} criada!`);
     atualizar();
   }
@@ -78,7 +84,10 @@ export function CampanhasAdmin() {
   async function excluir(p: Produto) {
     if (!confirm(`Remover "${p.nome}" da campanha?`)) return;
     const { error } = await supabase.from("campanha_produtos").delete().eq("id", p.id);
-    if (error) return toast.error("Não foi possível remover o produto.");
+    if (error) {
+      toast.error("Não foi possível remover o produto.");
+      return;
+    }
     toast.success("Produto removido.");
     atualizar();
   }
@@ -208,7 +217,7 @@ function FormProduto({
   proximaOrdem: number;
   produto: Produto | null;
   mercaflow: { idProduto: number; descricao: string }[];
-  erroMercaflow?: string;
+  erroMercaflow?: string | undefined;
   aoSalvar: () => void;
   aoCancelar: () => void;
 }) {
@@ -243,16 +252,28 @@ function FormProduto({
   async function salvar(e: FormEvent) {
     e.preventDefault();
     const n = nome.trim();
-    if (!n) return toast.error("Informe o nome do produto.");
+    if (!n) {
+      toast.error("Informe o nome do produto.");
+      return;
+    }
     const metaNum = meta ? Number(meta) : null;
     if (metaNum !== null && (!Number.isInteger(metaNum) || metaNum <= 0)) {
-      return toast.error("A meta do produto deve ser um número inteiro de unidades.");
+      {
+      toast.error("A meta do produto deve ser um número inteiro de unidades.");
+      return;
+    }
     }
     const idNum = idProduto ? Number(idProduto) : null;
     if (idNum !== null && (!Number.isInteger(idNum) || idNum <= 0)) {
-      return toast.error("Código do produto no Mercaflow inválido.");
+      {
+      toast.error("Código do produto no Mercaflow inválido.");
+      return;
     }
-    if (foto && foto.size > 5 * 1024 * 1024) return toast.error("A foto deve ter até 5 MB.");
+    }
+    if (foto && foto.size > 5 * 1024 * 1024) {
+      toast.error("A foto deve ter até 5 MB.");
+      return;
+    }
     setSalvando(true);
     try {
       const imagem_url = foto ? await enviarFoto(foto) : (produto?.imagem_url ?? null);

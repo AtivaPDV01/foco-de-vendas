@@ -40,7 +40,7 @@ export type VendedorParaSelos = { vendedor: string; loja: string; quantidade: nu
  */
 export function selosDoRanking(
   vendedores: VendedorParaSelos[],
-  opcoes: { destaqueDoDia?: string | null; diasComVenda?: number } = {},
+  opcoes: { destaqueDoDia?: string | null | undefined; diasComVenda?: number | undefined } = {},
 ): Map<string, Selo[]> {
   const lideres = new Set<string>();
   const lojasVistas = new Set<string>();
