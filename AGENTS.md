@@ -23,3 +23,4 @@
 - Achievement tiers and ranking badges live only in `src/lib/conquistas.ts` (tested in `src/test/conquistas.test.ts`); tiers are recognition only and never change commission rates.
 - The WhatsApp share card is drawn client-side on a canvas (`src/lib/card-compartilhavel.ts`) — no server rendering or extra dependency.
 - Installable app is manifest-only (`public/manifest.webmanifest`); no service worker.
+- Per-store monthly unit goals live in `metas_loja` (public read, admin write), shown on /loja via `MetaCard` with the store total swapped in — reuses the same ritmo/projeção math as the general goal.
