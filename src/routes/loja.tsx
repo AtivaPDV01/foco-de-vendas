@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, type ReactNode } from "react";
 import { ChevronLeft, ChevronRight, Store, Upload, Users } from "lucide-react";
 import { Marca, Rodape } from "@/components/marca";
 import { AbasPainel, SeloSincronizacao } from "@/components/painel/navegacao";
@@ -9,7 +9,7 @@ import { DesempenhoProdutos } from "@/components/painel/produtos";
 import { comissaoLoja, formatarBRL, formatarNumero } from "@/lib/comissao";
 import { selosDoRanking } from "@/lib/conquistas";
 import { mesAtualSP, nomeMes, somarMes } from "@/lib/datas";
-import { campanhaQuery, metasLojaQuery, painelQuery, produtosQuery } from "@/lib/painel.functions";
+import { campanhaQuery, metasLojaQuery, painelQuery, produtosQuery, type Campanha, type MetaLoja, type Painel } from "@/lib/painel.functions";
 
 const CHAVE_LOJA = "ativa-pdv:minha-loja";
 
@@ -127,13 +127,25 @@ function LojaPage() {
         </select>
       </section>
 
-      {loja && <DesempenhoLoja loja={loja} mes={mes} />}
-      {loja && null}
+      {loja && <DesempenhoLoja loja={loja} mes={mes} painel={painel} metas={metas} campanha={campanha} />}
       <Rodape />
     </div>
   );
+}
 
-  function DesempenhoLoja({ loja, mes }: { loja: string; mes: string }) {
+function DesempenhoLoja({
+  loja,
+  mes,
+  painel,
+  metas,
+  campanha,
+}: {
+  loja: string;
+  mes: string;
+  painel: Painel;
+  metas: MetaLoja[];
+  campanha: Campanha | null;
+}) {
     const dados = painel.lojas.find((l) => l.loja === loja);
     const meta = metas.find((m) => m.loja === loja)?.quantidade ?? null;
     const vendedores = painel.vendedores.filter((v) => v.loja === loja);
@@ -169,10 +181,9 @@ function LojaPage() {
         ) : null}
       </>
     );
-  }
 }
 
-function Resumo({ rotulo, valor, icone }: { rotulo: string; valor: string; icone?: React.ReactNode }) {
+function Resumo({ rotulo, valor, icone }: { rotulo: string; valor: string; icone?: ReactNode }) {
   return (
     <div className="surface p-5">
       <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
