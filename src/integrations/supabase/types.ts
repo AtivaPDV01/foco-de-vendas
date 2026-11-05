@@ -118,6 +118,27 @@ export type Database = {
         }
         Relationships: []
       }
+      metas_loja: {
+        Row: {
+          loja: string
+          mes: string
+          quantidade: number
+          updated_at: string
+        }
+        Insert: {
+          loja: string
+          mes: string
+          quantidade: number
+          updated_at?: string
+        }
+        Update: {
+          loja?: string
+          mes?: string
+          quantidade?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       sincronizacoes: {
         Row: {
           campanhas: string[] | null

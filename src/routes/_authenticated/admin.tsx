@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { queryOptions, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import { queryOptions, useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import { toast } from "sonner";
@@ -13,6 +13,7 @@ import { lerLinhasPlanilha, type ResultadoPlanilha } from "@/lib/planilha";
 import { dataBR, hojeSP, mesAtualSP, nomeMes } from "@/lib/datas";
 import { comissaoVendedor, formatarBRL, formatarNumero } from "@/lib/comissao";
 import { sincronizarMercaflowAgora } from "@/lib/mercaflow.functions";
+import { metasLojaQuery, painelQuery } from "@/lib/painel.functions";
 import { CampanhasAdmin } from "@/components/admin/campanhas-admin";
 
 const adminQuery = queryOptions({
@@ -101,6 +102,7 @@ function AdminPage() {
           <div className="space-y-5">
             <Mercaflow sincronizacoes={data.sincronizacoes} />
             <Metas metas={data.metas} />
+            <MetasLojas />
             <Historico importacoes={data.importacoes} />
           </div>
         </div>
@@ -491,6 +493,76 @@ function Metas({ metas }: { metas: { mes: string; quantidade: number }[] }) {
               <span className="font-semibold text-foreground">{formatarNumero(m.quantidade)} un.</span>
             </li>
           ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+function MetasLojas() {
+  const queryClient = useQueryClient();
+  const [mes, setMes] = useState(mesAtualSP());
+  const { data: painel } = useQuery(painelQuery(mes));
+  const { data: metas } = useQuery(metasLojaQuery(mes));
+  const [valores, setValores] = useState<Record<string, string>>({});
+  const [salvando, setSalvando] = useState<string | null>(null);
+  const lojas = Array.from(new Set([...(painel?.lojas.map((l) => l.loja) ?? []), ...(metas?.map((m) => m.loja) ?? [])])).sort(
+    (a, b) => a.localeCompare(b),
+  );
+  const valorDe = (loja: string) => valores[`${mes}|${loja}`] ?? String(metas?.find((m) => m.loja === loja)?.quantidade ?? "");
+
+  async function salvar(loja: string) {
+    const texto = valorDe(loja);
+    setSalvando(loja);
+    const { error } = texto
+      ? await supabase
+          .from("metas_loja")
+          .upsert({ mes: `${mes}-01`, loja, quantidade: Number(texto), updated_at: new Date().toISOString() })
+      : await supabase.from("metas_loja").delete().eq("mes", `${mes}-01`).eq("loja", loja);
+    setSalvando(null);
+    if (error) {
+      toast.error("Não foi possível salvar a meta da loja.");
+      return;
+    }
+    toast.success(texto ? `Meta de ${loja} salva!` : `Meta de ${loja} removida.`);
+    queryClient.invalidateQueries({ queryKey: ["metas-loja", mes] });
+  }
+
+  return (
+    <section className="surface p-6">
+      <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
+        <Target className="size-4 text-flame" /> Meta de cada loja (unidades)
+      </div>
+      <div className="mt-4 space-y-1.5">
+        <Label htmlFor="mes-lojas">Mês</Label>
+        <Input id="mes-lojas" type="month" value={mes} onChange={(e) => e.target.value && setMes(e.target.value)} />
+      </div>
+      {lojas.length === 0 ? (
+        <p className="mt-4 text-sm text-muted-foreground">Nenhuma loja com vendas neste mês ainda.</p>
+      ) : (
+        <ul className="mt-4 max-h-96 space-y-2 overflow-y-auto pr-1">
+          {lojas.map((loja) => {
+            const vendido = painel?.lojas.find((l) => l.loja === loja)?.quantidade ?? 0;
+            return (
+              <li key={loja} className="flex items-center gap-2">
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-semibold">{loja}</p>
+                  <p className="text-xs text-muted-foreground">{formatarNumero(vendido)} un. vendidas</p>
+                </div>
+                <Input
+                  aria-label={`Meta de ${loja}`}
+                  inputMode="numeric"
+                  placeholder="Meta"
+                  className="w-24"
+                  value={valorDe(loja)}
+                  onChange={(e) => setValores((v) => ({ ...v, [`${mes}|${loja}`]: e.target.value.replace(/\D/g, "").replace(/^0+/, "") }))}
+                />
+                <Button size="sm" variant="fire" disabled={salvando === loja} onClick={() => salvar(loja)}>
+                  {salvando === loja ? "..." : "Salvar"}
+                </Button>
+              </li>
+            );
+          })}
         </ul>
       )}
     </section>

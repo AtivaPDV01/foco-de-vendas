@@ -202,3 +202,25 @@ export const campanhaQuery = (mes: string) =>
     queryFn: () => getCampanha({ data: { mes } }),
     staleTime: 5 * 60_000,
   });
+
+// ---------- Metas individuais por loja ----------
+
+export type MetaLoja = { loja: string; quantidade: number };
+
+export const getMetasLoja = createServerFn({ method: "GET" })
+  .inputValidator((input: { mes: string }) => z.object({ mes: z.string().regex(/^\d{4}-\d{2}$/) }).parse(input))
+  .handler(async ({ data }): Promise<MetaLoja[]> => {
+    const { data: lista, error } = await clientePublico()
+      .from("metas_loja")
+      .select("loja, quantidade")
+      .eq("mes", `${data.mes}-01`);
+    if (error) throw new Error(error.message);
+    return lista ?? [];
+  });
+
+export const metasLojaQuery = (mes: string) =>
+  queryOptions({
+    queryKey: ["metas-loja", mes],
+    queryFn: () => getMetasLoja({ data: { mes } }),
+    staleTime: 60_000,
+  });

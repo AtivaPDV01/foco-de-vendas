@@ -43,6 +43,13 @@
       "when": 1793670157901,
       "tag": "0005_fotos_produto_leitura_admin",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793875270410,
+      "tag": "0006_metas_loja",
+      "breakpoints": true
     }
   ]
 }

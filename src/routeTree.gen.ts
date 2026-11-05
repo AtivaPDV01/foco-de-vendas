@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as DiaRouteImport } from './routes/dia'
 import { Route as ExtratoRouteImport } from './routes/extrato'
+import { Route as LojaRouteImport } from './routes/loja'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as ApiPublicJobsSincronizarMercaflowRouteImport } from './routes/api/public/jobs/sincronizar-mercaflow'
 
@@ -41,6 +42,11 @@ const ExtratoRoute = ExtratoRouteImport.update({
   path: '/extrato',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LojaRoute = LojaRouteImport.update({
+  id: '/loja',
+  path: '/loja',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -58,6 +64,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/dia': typeof DiaRoute
   '/extrato': typeof ExtratoRoute
+  '/loja': typeof LojaRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/api/public/jobs/sincronizar-mercaflow': typeof ApiPublicJobsSincronizarMercaflowRoute
 }
@@ -66,6 +73,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/dia': typeof DiaRoute
   '/extrato': typeof ExtratoRoute
+  '/loja': typeof LojaRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/api/public/jobs/sincronizar-mercaflow': typeof ApiPublicJobsSincronizarMercaflowRoute
 }
@@ -76,6 +84,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/dia': typeof DiaRoute
   '/extrato': typeof ExtratoRoute
+  '/loja': typeof LojaRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/api/public/jobs/sincronizar-mercaflow': typeof ApiPublicJobsSincronizarMercaflowRoute
 }
@@ -86,6 +95,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/dia'
     | '/extrato'
+    | '/loja'
     | '/admin'
     | '/api/public/jobs/sincronizar-mercaflow'
   fileRoutesByTo: FileRoutesByTo
@@ -94,6 +104,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/dia'
     | '/extrato'
+    | '/loja'
     | '/admin'
     | '/api/public/jobs/sincronizar-mercaflow'
   id:
@@ -103,6 +114,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/dia'
     | '/extrato'
+    | '/loja'
     | '/_authenticated/admin'
     | '/api/public/jobs/sincronizar-mercaflow'
   fileRoutesById: FileRoutesById
@@ -113,6 +125,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   DiaRoute: typeof DiaRoute
   ExtratoRoute: typeof ExtratoRoute
+  LojaRoute: typeof LojaRoute
   ApiPublicJobsSincronizarMercaflowRoute: typeof ApiPublicJobsSincronizarMercaflowRoute
 }
 
@@ -153,6 +166,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ExtratoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/loja': {
+      id: '/loja'
+      path: '/loja'
+      fullPath: '/loja'
+      preLoaderRoute: typeof LojaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/admin': {
       id: '/_authenticated/admin'
       path: '/admin'
@@ -187,6 +207,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   DiaRoute: DiaRoute,
   ExtratoRoute: ExtratoRoute,
+  LojaRoute: LojaRoute,
   ApiPublicJobsSincronizarMercaflowRoute:
     ApiPublicJobsSincronizarMercaflowRoute,
 }
