@@ -39,7 +39,7 @@ const SITUACAO: Record<Ritmo["situacao"], { rotulo: string; classe: string }> = 
   "sem-meta": { rotulo: "", classe: "" },
 };
 
-export function MetaCard({ painel }: { painel: Painel }) {
+export function MetaCard({ painel, titulo = "Meta geral do mês" }: { painel: Painel; titulo?: string }) {
   const mes = painel.mes.slice(0, 7);
   const pct = progressoMeta(painel.total, painel.meta);
   const restante = painel.meta ? Math.max(painel.meta - painel.total, 0) : 0;
@@ -58,7 +58,7 @@ export function MetaCard({ painel }: { painel: Painel }) {
     <section className="surface glow relative overflow-hidden p-6 md:p-8 animate-rise">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
-          <Target className="size-4 text-sun" /> Meta geral do mês
+          <Target className="size-4 text-sun" /> {titulo}
         </div>
         {painel.meta && ehMesAtual ? (
           <span className={cn("rounded-full px-3 py-1 text-xs font-bold", situacao.classe)}>{situacao.rotulo}</span>
