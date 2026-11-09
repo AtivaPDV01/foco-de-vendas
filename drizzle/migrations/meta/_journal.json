@@ -1,0 +1,55 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1793056473711,
+      "tag": "0000_ranking_vendas",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1793063803786,
+      "tag": "0001_quantidade_campanha",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793066160303,
+      "tag": "0002_loja_destaque_do_dia",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1793283571817,
+      "tag": "0003_sincronizacao_mercaflow",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793670115823,
+      "tag": "0004_campanhas_produtos_e_extrato",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1793670157901,
+      "tag": "0005_fotos_produto_leitura_admin",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793875270410,
+      "tag": "0006_metas_loja",
+      "breakpoints": true
+    }
+  ]
+}

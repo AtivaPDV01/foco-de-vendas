@@ -1,0 +1,13 @@
+- [x] Sincronização Mercaflow a cada 5 min
+- [x] Selo ao vivo com hora da última sincronização
+- [x] Aba Dia com filtros de data, loja e vendedor
+- [x] Campanha ATIVA PDV NOVEMBRO no sincronizador (todos os itens R$ 0,20 / R$ 0,05)
+- [x] Faixa com os itens da campanha de novembro na página inicial
+- [x] Extrato e simulador individual de comissão (vendedor escolhe o nome; faixas de conquista)
+- [x] Card compartilhável para WhatsApp (pódio do dia + loja destaque)
+- [x] Selos de conquista no ranking
+- [x] Filtro por loja no ranking de vendedores e no pódio
+- [x] Termômetro de ritmo e projeção de fechamento da meta
+- [x] Desempenho por produto da campanha (sincroniza venda por produto do Mercaflow)
+- [x] Gerenciador de campanhas no /admin (produtos, imagens, metas)
+- [x] App instalável na tela inicial do celular
