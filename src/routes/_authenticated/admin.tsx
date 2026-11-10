@@ -15,6 +15,7 @@ import { comissaoVendedor, formatarBRL, formatarNumero } from "@/lib/comissao";
 import { sincronizarMercaflowAgora } from "@/lib/mercaflow.functions";
 import { metasLojaQuery, painelQuery } from "@/lib/painel.functions";
 import { CampanhasAdmin } from "@/components/admin/campanhas-admin";
+import { GerentesAdmin } from "@/components/admin/gerentes-admin";
 
 const adminQuery = queryOptions({
   queryKey: ["admin"],
@@ -103,6 +104,7 @@ function AdminPage() {
             <Mercaflow sincronizacoes={data.sincronizacoes} />
             <Metas metas={data.metas} />
             <MetasLojas />
+            <GerentesAdmin />
             <Historico importacoes={data.importacoes} />
           </div>
         </div>

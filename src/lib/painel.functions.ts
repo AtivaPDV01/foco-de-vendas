@@ -3,7 +3,7 @@ import { queryOptions } from "@tanstack/react-query";
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import type { Database } from "@/integrations/supabase/types";
-import { mesAtualSP } from "@/lib/datas";
+import { hojeSP, mesAtualSP, somarDias } from "@/lib/datas";
 
 // `quantidade` é o total de unidades; `campanha` é quantas delas pagam comissão reduzida.
 // `dias` = dias com venda no mês (só no painel do mês).
@@ -200,6 +200,37 @@ export const campanhaQuery = (mes: string) =>
   queryOptions({
     queryKey: ["campanha", mes],
     queryFn: () => getCampanha({ data: { mes } }),
+    staleTime: 5 * 60_000,
+  });
+
+// ---------- Variação de posição (foto do ranking tirada todo dia às 00:05) ----------
+
+export type Variacoes = { vendedores: Record<string, number>; lojas: Record<string, number> };
+
+/** Posição de cada vendedor/loja no ranking de ontem. Só existe para o mês atual. */
+export const getVariacoes = createServerFn({ method: "GET" })
+  .inputValidator((input: { mes: string }) => z.object({ mes: z.string().regex(/^\d{4}-\d{2}$/) }).parse(input))
+  .handler(async ({ data }): Promise<Variacoes> => {
+    if (data.mes !== mesAtualSP()) return { vendedores: {}, lojas: {} };
+    const ontem = somarDias(hojeSP(), -1);
+    const { data: linhas, error } = await clientePublico()
+      .from("ranking_snapshot")
+      .select("tipo, id, posicao")
+      .eq("data", ontem);
+    if (error) throw new Error(error.message);
+    const vendedores: Record<string, number> = {};
+    const lojas: Record<string, number> = {};
+    for (const l of linhas ?? []) {
+      if (l.tipo === "vendedor") vendedores[l.id] = l.posicao;
+      else lojas[l.id] = l.posicao;
+    }
+    return { vendedores, lojas };
+  });
+
+export const variacoesQuery = (mes: string) =>
+  queryOptions({
+    queryKey: ["variacoes", mes],
+    queryFn: () => getVariacoes({ data: { mes } }),
     staleTime: 5 * 60_000,
   });
 
