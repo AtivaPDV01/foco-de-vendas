@@ -4,12 +4,12 @@ import { useEffect, useMemo, useState } from "react";
 import { Calculator, CalendarDays, ChevronLeft, ChevronRight, Medal, Package, Search, Upload, UserRound, X } from "lucide-react";
 import { Marca, Rodape } from "@/components/marca";
 import { AbasPainel, SeloSincronizacao } from "@/components/painel/navegacao";
-import { iniciais, Selos } from "@/components/painel/painel";
+import { iniciais, Selos, Variacao } from "@/components/painel/painel";
 import { Slider } from "@/components/ui/slider";
 import { comissaoVendedor, formatarBRL, formatarNumero, ritmoMeta } from "@/lib/comissao";
 import { FAIXAS, faixaDe, posicaoCom, proximaFaixa, selosDoRanking } from "@/lib/conquistas";
 import { dataBR, diaDaSemana, diasNoMes, hojeSP, mesAtualSP, nomeMes, somarMes } from "@/lib/datas";
-import { extratoQuery, painelQuery, type Painel } from "@/lib/painel.functions";
+import { extratoQuery, painelQuery, variacoesQuery, type Painel } from "@/lib/painel.functions";
 import { cn } from "@/lib/utils";
 
 const CHAVE_NOME = "ativa-pdv:meu-nome";
@@ -228,6 +228,7 @@ function EscolherVendedor({
 
 function Extrato({ vendedor, mes, painel }: { vendedor: string; mes: string; painel: Painel }) {
   const { data: extrato } = useQuery(extratoQuery(mes, vendedor));
+  const { data: variacoes } = useQuery(variacoesQuery(mes));
   const [extra, setExtra] = useState(100);
 
   if (!extrato) return null;
@@ -262,6 +263,14 @@ function Extrato({ vendedor, mes, painel }: { vendedor: string; mes: string; pai
 
   return (
     <div className="mt-5 space-y-5">
+      <ProgressoPessoal
+        vendedor={vendedor}
+        painel={painel}
+        qtd={qtd}
+        comissao={comissao}
+        posicao={extrato.posicao}
+        anterior={variacoes?.vendedores[vendedor]}
+      />
       <section className="surface glow ring-fire relative overflow-hidden p-6 md:p-8">
         <div className="bg-fire pointer-events-none absolute -right-16 -top-16 size-48 rounded-full opacity-20 blur-3xl" />
         <div className="relative flex flex-wrap items-center gap-4">
