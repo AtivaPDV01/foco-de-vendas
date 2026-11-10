@@ -412,7 +412,7 @@ export function Variacao({ atual, anterior }: { atual: number; anterior: number 
 const normalizar = (s: string) =>
   s
     .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
+    .replace(/[̀-ͯ]/g, "") // remove acentos (faixa combinante U+0300–U+036F)
     .toLowerCase();
 
 const PAGINA = 10;
@@ -541,12 +541,15 @@ export function RankingLojas({
   mes,
   titulo = "Ranking das lojas",
   vazio = "Sem vendas neste mês.",
+  variacoes,
 }: {
   lojas: LojaRanking[];
   /** Mês (AAAA-MM) exibido, para mostrar a regra de comissão daquele mês. */
   mes: string;
   titulo?: string;
   vazio?: string;
+  /** Posição de cada loja no ranking de ontem (só no mês atual). */
+  variacoes?: Record<string, number>;
 }) {
   const maior = lojas[0]?.quantidade || 1;
   return (
@@ -571,8 +574,9 @@ export function RankingLojas({
                       corPosicao(i),
                     )}
                   >
-                    {i + 1}
+                    {i + 1}º
                   </span>
+                  {variacoes && <Variacao atual={i + 1} anterior={variacoes[l.loja]} />}{" "}
                   {l.loja}
                 </p>
                 <p className="shrink-0 font-display font-bold">
