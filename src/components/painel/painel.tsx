@@ -433,7 +433,7 @@ export function RankingVendedores({
   titulo?: string;
   vazio?: string;
   /** Posição de cada vendedor no ranking de ontem (só no mês atual). */
-  variacoes?: Record<string, number>;
+  variacoes?: Record<string, number> | undefined;
 }) {
   const [busca, setBusca] = useState("");
   const [visivel, setVisivel] = useState(PAGINA);
@@ -549,7 +549,7 @@ export function RankingLojas({
   titulo?: string;
   vazio?: string;
   /** Posição de cada loja no ranking de ontem (só no mês atual). */
-  variacoes?: Record<string, number>;
+  variacoes?: Record<string, number> | undefined;
 }) {
   const maior = lojas[0]?.quantidade || 1;
   return (
