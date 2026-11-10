@@ -17,6 +17,8 @@ import { Route as ExtratoRouteImport } from './routes/extrato'
 import { Route as LojaRouteImport } from './routes/loja'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as ApiPublicJobsSincronizarMercaflowRouteImport } from './routes/api/public/jobs/sincronizar-mercaflow'
+import { Route as ApiPublicJobsSnapshotRankingRouteImport } from './routes/api/public/jobs/snapshot-ranking'
+import { Route as ApiPublicJobsWhatsappGerentesRouteImport } from './routes/api/public/jobs/whatsapp-gerentes'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -58,6 +60,18 @@ const ApiPublicJobsSincronizarMercaflowRoute =
     path: '/api/public/jobs/sincronizar-mercaflow',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicJobsSnapshotRankingRoute =
+  ApiPublicJobsSnapshotRankingRouteImport.update({
+    id: '/api/public/jobs/snapshot-ranking',
+    path: '/api/public/jobs/snapshot-ranking',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicJobsWhatsappGerentesRoute =
+  ApiPublicJobsWhatsappGerentesRouteImport.update({
+    id: '/api/public/jobs/whatsapp-gerentes',
+    path: '/api/public/jobs/whatsapp-gerentes',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -67,6 +81,8 @@ export interface FileRoutesByFullPath {
   '/loja': typeof LojaRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/api/public/jobs/sincronizar-mercaflow': typeof ApiPublicJobsSincronizarMercaflowRoute
+  '/api/public/jobs/snapshot-ranking': typeof ApiPublicJobsSnapshotRankingRoute
+  '/api/public/jobs/whatsapp-gerentes': typeof ApiPublicJobsWhatsappGerentesRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -76,6 +92,8 @@ export interface FileRoutesByTo {
   '/loja': typeof LojaRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/api/public/jobs/sincronizar-mercaflow': typeof ApiPublicJobsSincronizarMercaflowRoute
+  '/api/public/jobs/snapshot-ranking': typeof ApiPublicJobsSnapshotRankingRoute
+  '/api/public/jobs/whatsapp-gerentes': typeof ApiPublicJobsWhatsappGerentesRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -87,6 +105,8 @@ export interface FileRoutesById {
   '/loja': typeof LojaRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/api/public/jobs/sincronizar-mercaflow': typeof ApiPublicJobsSincronizarMercaflowRoute
+  '/api/public/jobs/snapshot-ranking': typeof ApiPublicJobsSnapshotRankingRoute
+  '/api/public/jobs/whatsapp-gerentes': typeof ApiPublicJobsWhatsappGerentesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -98,6 +118,8 @@ export interface FileRouteTypes {
     | '/loja'
     | '/admin'
     | '/api/public/jobs/sincronizar-mercaflow'
+    | '/api/public/jobs/snapshot-ranking'
+    | '/api/public/jobs/whatsapp-gerentes'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -107,6 +129,8 @@ export interface FileRouteTypes {
     | '/loja'
     | '/admin'
     | '/api/public/jobs/sincronizar-mercaflow'
+    | '/api/public/jobs/snapshot-ranking'
+    | '/api/public/jobs/whatsapp-gerentes'
   id:
     | '__root__'
     | '/'
@@ -117,6 +141,8 @@ export interface FileRouteTypes {
     | '/loja'
     | '/_authenticated/admin'
     | '/api/public/jobs/sincronizar-mercaflow'
+    | '/api/public/jobs/snapshot-ranking'
+    | '/api/public/jobs/whatsapp-gerentes'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -127,6 +153,8 @@ export interface RootRouteChildren {
   ExtratoRoute: typeof ExtratoRoute
   LojaRoute: typeof LojaRoute
   ApiPublicJobsSincronizarMercaflowRoute: typeof ApiPublicJobsSincronizarMercaflowRoute
+  ApiPublicJobsSnapshotRankingRoute: typeof ApiPublicJobsSnapshotRankingRoute
+  ApiPublicJobsWhatsappGerentesRoute: typeof ApiPublicJobsWhatsappGerentesRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -187,6 +215,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicJobsSincronizarMercaflowRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/jobs/snapshot-ranking': {
+      id: '/api/public/jobs/snapshot-ranking'
+      path: '/api/public/jobs/snapshot-ranking'
+      fullPath: '/api/public/jobs/snapshot-ranking'
+      preLoaderRoute: typeof ApiPublicJobsSnapshotRankingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/jobs/whatsapp-gerentes': {
+      id: '/api/public/jobs/whatsapp-gerentes'
+      path: '/api/public/jobs/whatsapp-gerentes'
+      fullPath: '/api/public/jobs/whatsapp-gerentes'
+      preLoaderRoute: typeof ApiPublicJobsWhatsappGerentesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -210,6 +252,8 @@ const rootRouteChildren: RootRouteChildren = {
   LojaRoute: LojaRoute,
   ApiPublicJobsSincronizarMercaflowRoute:
     ApiPublicJobsSincronizarMercaflowRoute,
+  ApiPublicJobsSnapshotRankingRoute: ApiPublicJobsSnapshotRankingRoute,
+  ApiPublicJobsWhatsappGerentesRoute: ApiPublicJobsWhatsappGerentesRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
