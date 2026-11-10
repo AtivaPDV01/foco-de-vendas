@@ -467,7 +467,7 @@ function ProgressoPessoal({
         <p className="font-display text-4xl font-black">
           <span className="text-fire">{posicao}º</span>
         </p>
-        {anterior !== undefined || posicao ? <Variacao atual={posicao} anterior={anterior} /> : null}
+        <Variacao atual={posicao} anterior={anterior} />
         <p className="text-sm text-muted-foreground">
           no ranking geral · comissão atual <b className="text-sun">{formatarBRL(comissao)}</b>
         </p>
