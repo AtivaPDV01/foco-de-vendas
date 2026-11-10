@@ -16,7 +16,7 @@ import { ItensCampanha } from "@/components/painel/itens-campanha";
 import { CompartilharPodio } from "@/components/painel/compartilhar";
 import { DesempenhoProdutos } from "@/components/painel/produtos";
 import { selosDoRanking } from "@/lib/conquistas";
-import { campanhaQuery, painelQuery, produtosQuery } from "@/lib/painel.functions";
+import { campanhaQuery, painelQuery, produtosQuery, variacoesQuery } from "@/lib/painel.functions";
 import { dataBR, mesAtualSP, nomeMes, somarMes } from "@/lib/datas";
 
 export const Route = createFileRoute("/")({
@@ -63,6 +63,7 @@ function Index() {
   const { data: campanha } = useSuspenseQuery(campanhaQuery(mes));
   const lojaValida = loja && painel.lojas.some((l) => l.loja === loja) ? loja : undefined;
   const { data: produtos } = useQuery({ ...produtosQuery(mes, lojaValida), placeholderData: keepPreviousData });
+  const { data: variacoes } = useQuery(variacoesQuery(mes));
   const selos = useMemo(
     () =>
       selosDoRanking(painel.vendedores, {
@@ -193,10 +194,11 @@ function Index() {
           vendedores={vendedores}
           mes={mes}
           selos={selos}
+          variacoes={lojaValida ? undefined : variacoes?.vendedores}
           titulo={lojaValida ? `Vendedores · ${lojaValida}` : "Ranking geral de vendedores"}
           vazio={lojaValida ? "Sem vendas desta loja no mês." : "Sem vendas neste mês."}
         />
-        <RankingLojas lojas={painel.lojas} mes={mes} />
+        <RankingLojas lojas={painel.lojas} mes={mes} variacoes={variacoes?.lojas} />
       </div>
 
       {(produtos?.length || campanha?.itens.length) ? (

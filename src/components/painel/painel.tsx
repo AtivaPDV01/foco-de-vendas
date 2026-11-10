@@ -412,7 +412,7 @@ export function Variacao({ atual, anterior }: { atual: number; anterior: number 
 const normalizar = (s: string) =>
   s
     .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "") // remove acentos (faixa combinante U+0300–U+036F)
+    .replace(/[̀-ͯ]/g, "")
     .toLowerCase();
 
 const PAGINA = 10;
