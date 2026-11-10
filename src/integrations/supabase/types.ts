@@ -76,6 +76,33 @@ export type Database = {
         }
         Relationships: []
       }
+      gerentes: {
+        Row: {
+          ativo: boolean
+          created_at: string
+          id: string
+          loja: string
+          primeiro_nome: string
+          telefone: string
+        }
+        Insert: {
+          ativo?: boolean
+          created_at?: string
+          id?: string
+          loja: string
+          primeiro_nome: string
+          telefone: string
+        }
+        Update: {
+          ativo?: boolean
+          created_at?: string
+          id?: string
+          loja?: string
+          primeiro_nome?: string
+          telefone?: string
+        }
+        Relationships: []
+      }
       importacoes: {
         Row: {
           arquivo: string
@@ -136,6 +163,30 @@ export type Database = {
           mes?: string
           quantidade?: number
           updated_at?: string
+        }
+        Relationships: []
+      }
+      ranking_snapshot: {
+        Row: {
+          data: string
+          id: string
+          posicao: number
+          tipo: string
+          unidades: number
+        }
+        Insert: {
+          data: string
+          id: string
+          posicao: number
+          tipo: string
+          unidades: number
+        }
+        Update: {
+          data?: string
+          id?: string
+          posicao?: number
+          tipo?: string
+          unidades?: number
         }
         Relationships: []
       }
@@ -264,6 +315,47 @@ export type Database = {
         }
         Relationships: []
       }
+      whatsapp_logs: {
+        Row: {
+          created_at: string
+          erro: string | null
+          gerente_id: string | null
+          id: string
+          loja: string | null
+          mensagem: string
+          status: string
+          telefone: string
+        }
+        Insert: {
+          created_at?: string
+          erro?: string | null
+          gerente_id?: string | null
+          id?: string
+          loja?: string | null
+          mensagem: string
+          status: string
+          telefone: string
+        }
+        Update: {
+          created_at?: string
+          erro?: string | null
+          gerente_id?: string | null
+          id?: string
+          loja?: string | null
+          mensagem?: string
+          status?: string
+          telefone?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_logs_gerente_id_fkey"
+            columns: ["gerente_id"]
+            isOneToOne: false
+            referencedRelation: "gerentes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -291,6 +383,7 @@ export type Database = {
       painel_dia: { Args: { _data: string }; Returns: Json }
       painel_mes: { Args: { _mes: string }; Returns: Json }
       painel_produtos: { Args: { _loja?: string; _mes: string }; Returns: Json }
+      snapshot_ranking: { Args: { _data: string }; Returns: number }
       ultima_sincronizacao: { Args: never; Returns: string }
     }
     Enums: {
