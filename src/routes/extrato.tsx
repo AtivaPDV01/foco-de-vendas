@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
-import { Calculator, CalendarDays, ChevronLeft, ChevronRight, Medal, Package, Search, Upload, UserRound, X } from "lucide-react";
+import { Calculator, CalendarDays, ChevronLeft, ChevronRight, Medal, Package, Rocket, Search, Upload, UserRound, X } from "lucide-react";
 import { Marca, Rodape } from "@/components/marca";
 import { AbasPainel, SeloSincronizacao } from "@/components/painel/navegacao";
 import { iniciais, Selos, Variacao } from "@/components/painel/painel";
@@ -432,6 +432,77 @@ function Extrato({ vendedor, mes, painel }: { vendedor: string; mes: string; pai
         </section>
       </div>
     </div>
+  );
+}
+
+/** Cartão motivador no topo do extrato: posição, variação, quem está à frente e atrás. */
+function ProgressoPessoal({
+  vendedor,
+  painel,
+  qtd,
+  comissao,
+  posicao,
+  anterior,
+}: {
+  vendedor: string;
+  painel: Painel;
+  qtd: number;
+  comissao: number;
+  posicao: number | null;
+  anterior: number | undefined;
+}) {
+  if (!posicao) return null;
+  const aFrente = posicao > 1 ? painel.vendedores[posicao - 2] : null;
+  const atras = painel.vendedores[posicao] ?? null;
+  const faltam = aFrente ? aFrente.quantidade - qtd + 1 : 0;
+  const progresso = aFrente ? Math.min((qtd / (aFrente.quantidade + 1)) * 100, 100) : 100;
+
+  return (
+    <section className="surface ring-fire relative overflow-hidden p-6 md:p-8 animate-rise">
+      <div className="bg-fire pointer-events-none absolute -left-16 -top-16 size-48 rounded-full opacity-25 blur-3xl" />
+      <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
+        <Rocket className="size-4 text-sun" /> Seu progresso
+      </div>
+      <div className="relative mt-4 flex flex-wrap items-center gap-4">
+        <p className="font-display text-4xl font-black">
+          <span className="text-fire">{posicao}º</span>
+        </p>
+        {anterior !== undefined || posicao ? <Variacao atual={posicao} anterior={anterior} /> : null}
+        <p className="text-sm text-muted-foreground">
+          no ranking geral · comissão atual <b className="text-sun">{formatarBRL(comissao)}</b>
+        </p>
+      </div>
+
+      {posicao === 1 ? (
+        <p className="relative mt-4 rounded-xl bg-sun/10 px-4 py-3 text-sm font-semibold">
+          👑 Você lidera!
+          {atras ? (
+            <>
+              {" "}Vantagem de <b className="text-sun">{formatarNumero(qtd - atras.quantidade)} un.</b> sobre{" "}
+              {atras.vendedor}.
+            </>
+          ) : null}
+        </p>
+      ) : aFrente ? (
+        <div className="relative mt-4">
+          <p className="text-sm">
+            Faltam <b className="text-fire">{formatarNumero(faltam)} un.</b> pra passar{" "}
+            <b>{aFrente.vendedor}</b>
+          </p>
+          <div className="mt-2 h-3 overflow-hidden rounded-full bg-muted">
+            <div
+              className="bg-fire h-full rounded-full transition-[width] duration-1000"
+              style={{ width: `${progresso}%` }}
+            />
+          </div>
+          {atras && (
+            <p className="mt-2 text-xs text-muted-foreground">
+              Vantagem de {formatarNumero(qtd - atras.quantidade)} un. sobre {atras.vendedor}, que vem logo atrás.
+            </p>
+          )}
+        </div>
+      ) : null}
+    </section>
   );
 }
 
