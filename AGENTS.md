@@ -24,3 +24,5 @@
 - The WhatsApp share card is drawn client-side on a canvas (`src/lib/card-compartilhavel.ts`) — no server rendering or extra dependency.
 - Installable app is manifest-only (`public/manifest.webmanifest`); no service worker.
 - Per-store monthly unit goals live in `metas_loja` (public read, admin write), shown on /loja via `MetaCard` with the store total swapped in — reuses the same ritmo/projeção math as the general goal.
+- Daily ranking variation: `ranking_snapshot` is photographed at 00:05 (Brasília) by the managed schedule hitting `/api/public/jobs/snapshot-ranking` (SQL `snapshot_ranking(date)`); the UI shows ▲▼=/NOVO vs yesterday only for the current month.
+- Daily WhatsApp summaries to store managers go through Z-API (`src/lib/whatsapp.server.ts`, secrets ZAPI_INSTANCE_ID/ZAPI_INSTANCE_TOKEN/ZAPI_CLIENT_TOKEN); the message text is pure in `src/lib/whatsapp.ts` (tested), managers and send logs live in `gerentes`/`whatsapp_logs` (admin-only), cron at 08:00 (Brasília) via `/api/public/jobs/whatsapp-gerentes`.
