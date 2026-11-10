@@ -1,5 +1,6 @@
 import type React from "react";
-import { CalendarCheck, Crown, Flame, Gem, Medal, Store, Target, Thermometer, Trophy, Users } from "lucide-react";
+import { useState } from "react";
+import { CalendarCheck, Crown, Flame, Gem, Medal, Search, Store, Target, Thermometer, Trophy, Users } from "lucide-react";
 import {
   comissaoLoja,
   comissaoVendedor,
@@ -396,12 +397,33 @@ export function Podio({
   );
 }
 
+/** Selo de variação de posição em relação a ontem: ▲ subiu, ▼ caiu, = manteve, NOVO se não estava no ranking. */
+export function Variacao({ atual, anterior }: { atual: number; anterior: number | undefined }) {
+  const base = "inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-bold leading-none";
+  if (anterior === undefined) {
+    return <span className={cn(base, "bg-sun/15 text-sun")}>NOVO</span>;
+  }
+  const d = anterior - atual;
+  if (d > 0) return <span className={cn(base, "bg-success/15 text-success")}>▲{d}</span>;
+  if (d < 0) return <span className={cn(base, "bg-flame/15 text-flame")}>▼{-d}</span>;
+  return <span className={cn(base, "bg-muted text-muted-foreground")}>=</span>;
+}
+
+const normalizar = (s: string) =>
+  s
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase();
+
+const PAGINA = 10;
+
 export function RankingVendedores({
   vendedores,
   mes,
   titulo = "Ranking geral de vendedores",
   vazio = "Sem vendas neste mês.",
   selos,
+  variacoes,
 }: {
   vendedores: VendedorRanking[];
   /** Selos de conquista por vendedor. */
@@ -410,7 +432,19 @@ export function RankingVendedores({
   mes: string;
   titulo?: string;
   vazio?: string;
+  /** Posição de cada vendedor no ranking de ontem (só no mês atual). */
+  variacoes?: Record<string, number>;
 }) {
+  const [busca, setBusca] = useState("");
+  const [visivel, setVisivel] = useState(PAGINA);
+  const termo = normalizar(busca.trim());
+  const posicaoDe = new Map(vendedores.map((v, i) => [v.vendedor, i + 1]));
+  const filtrados = termo
+    ? vendedores.filter((v) => normalizar(v.vendedor).includes(termo) || normalizar(v.loja).includes(termo))
+    : null;
+  const exibidos = filtrados ?? vendedores.slice(0, visivel);
+  const tudoVisivel = visivel >= vendedores.length;
+
   return (
     <section className="surface p-6 md:p-8">
       <div className="flex items-center justify-between gap-2">
@@ -422,48 +456,81 @@ export function RankingVendedores({
       {vendedores.length === 0 ? (
         <p className="mt-6 text-sm text-muted-foreground">{vazio}</p>
       ) : (
-        <ol className="mt-5 divide-y divide-border">
-          <li className="hidden grid-cols-[2.5rem_1fr_6rem_7rem] gap-3 pb-2 text-[11px] font-bold uppercase tracking-wider text-muted-foreground sm:grid">
-            <span>#</span>
-            <span>Vendedor</span>
-            <span className="text-right">Unidades</span>
-            <span className="text-right">Comissão</span>
-          </li>
-          {vendedores.map((v, i) => (
-            <li
-              key={v.vendedor}
-              className="grid grid-cols-[2.5rem_1fr_auto] items-center gap-3 py-3 sm:grid-cols-[2.5rem_1fr_6rem_7rem]"
-            >
-              <span
-                className={cn(
-                  "font-display text-lg font-extrabold",
-                  corPosicao(i),
-                )}
+        <>
+          <label className="relative mt-4 block">
+            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <input
+              type="search"
+              aria-label="Buscar seu nome"
+              placeholder="Buscar seu nome"
+              value={busca}
+              onChange={(e) => setBusca(e.target.value)}
+              className="h-11 w-full rounded-full border border-border bg-card/70 pl-9 pr-4 text-sm outline-none focus:border-sun"
+            />
+          </label>
+          {filtrados && filtrados.length === 0 ? (
+            <p className="mt-6 text-sm text-muted-foreground">Nenhum vendedor encontrado.</p>
+          ) : (
+            <ol className="mt-4 divide-y divide-border">
+              <li className="hidden grid-cols-[2.5rem_1fr_6rem_7rem] gap-3 pb-2 text-[11px] font-bold uppercase tracking-wider text-muted-foreground sm:grid">
+                <span>#</span>
+                <span>Vendedor</span>
+                <span className="text-right">Unidades</span>
+                <span className="text-right">Comissão</span>
+              </li>
+              {exibidos.map((v, i) => {
+                const pos = posicaoDe.get(v.vendedor) ?? i + 1;
+                return (
+                  <li
+                    key={v.vendedor}
+                    className={cn(
+                      "grid grid-cols-[2.5rem_1fr_auto] items-center gap-3 py-3 sm:grid-cols-[2.5rem_1fr_6rem_7rem]",
+                      !filtrados && i >= PAGINA && "animate-rise",
+                    )}
+                  >
+                    <span className={cn("flex items-center gap-1.5 font-display text-lg font-extrabold", corPosicao(pos - 1))}>
+                      {pos}º
+                      {variacoes && <Variacao atual={pos} anterior={variacoes[v.vendedor]} />}
+                    </span>
+                    <div className="flex min-w-0 items-center gap-3">
+                      <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-bold">
+                        {iniciais(v.vendedor)}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="truncate font-semibold">{v.vendedor}</p>
+                        <p className="truncate text-xs text-muted-foreground">{v.loja}</p>
+                        <Selos selos={selos?.get(v.vendedor)} className="mt-1" />
+                      </div>
+                    </div>
+                    <div className="text-right sm:contents">
+                      <p className="font-display font-bold sm:text-right">
+                        {formatarNumero(v.quantidade)}
+                        <span className="text-xs font-medium text-muted-foreground sm:hidden"> un.</span>
+                      </p>
+                      <p className="text-sm font-bold text-sun sm:text-right">
+                        {formatarBRL(comissaoVendedor(v.quantidade, v.campanha))}
+                      </p>
+                    </div>
+                  </li>
+                );
+              })}
+            </ol>
+          )}
+          {!filtrados && vendedores.length > PAGINA && (
+            <div className="mt-4 text-center">
+              <button
+                type="button"
+                onClick={() => setVisivel(tudoVisivel ? PAGINA : Math.min(visivel + PAGINA, vendedores.length))}
+                className="rounded-full border border-border px-5 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:border-sun hover:text-foreground"
               >
-                {i + 1}
-              </span>
-              <div className="flex min-w-0 items-center gap-3">
-                <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-bold">
-                  {iniciais(v.vendedor)}
-                </div>
-                <div className="min-w-0">
-                  <p className="truncate font-semibold">{v.vendedor}</p>
-                  <p className="truncate text-xs text-muted-foreground">{v.loja}</p>
-                  <Selos selos={selos?.get(v.vendedor)} className="mt-1" />
-                </div>
-              </div>
-              <div className="text-right sm:contents">
-                <p className="font-display font-bold sm:text-right">
-                  {formatarNumero(v.quantidade)}
-                  <span className="text-xs font-medium text-muted-foreground sm:hidden"> un.</span>
-                </p>
-                <p className="text-sm font-bold text-sun sm:text-right">
-                  {formatarBRL(comissaoVendedor(v.quantidade, v.campanha))}
-                </p>
-              </div>
-            </li>
-          ))}
-        </ol>
+                {tudoVisivel ? "Mostrar menos" : "Ver mais"}
+              </button>
+              <p className="mt-2 text-xs text-muted-foreground">
+                Exibindo {Math.min(visivel, vendedores.length)} de {vendedores.length}
+              </p>
+            </div>
+          )}
+        </>
       )}
     </section>
   );
