@@ -64,6 +64,13 @@
       "when": 1794573223042,
       "tag": "0008_ranking_por_vendedor_e_loja",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1794576024753,
+      "tag": "0009_metas_loja_restrita",
+      "breakpoints": true
     }
   ]
 }
