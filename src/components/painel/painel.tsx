@@ -350,7 +350,7 @@ export function Podio({
             const med = MEDALHA[i]!;
             return (
               <div
-                key={v.vendedor}
+                key={`${v.vendedor}|${v.loja}`}
                 className="flex flex-col items-center text-center animate-rise"
                 style={{ animationDelay: `${(2 - i) * 120}ms` }}
               >
@@ -438,7 +438,7 @@ export function RankingVendedores({
   const [busca, setBusca] = useState("");
   const [visivel, setVisivel] = useState(PAGINA);
   const termo = normalizar(busca.trim());
-  const posicaoDe = new Map(vendedores.map((v, i) => [v.vendedor, i + 1]));
+  const posicaoDe = new Map(vendedores.map((v, i) => [`${v.vendedor}|${v.loja}`, i + 1]));
   const filtrados = termo
     ? vendedores.filter((v) => normalizar(v.vendedor).includes(termo) || normalizar(v.loja).includes(termo))
     : null;
@@ -479,10 +479,10 @@ export function RankingVendedores({
                 <span className="text-right">Comissão</span>
               </li>
               {exibidos.map((v, i) => {
-                const pos = posicaoDe.get(v.vendedor) ?? i + 1;
+                const pos = posicaoDe.get(`${v.vendedor}|${v.loja}`) ?? i + 1;
                 return (
                   <li
-                    key={v.vendedor}
+                    key={`${v.vendedor}|${v.loja}`}
                     className={cn(
                       "grid grid-cols-[2.5rem_1fr_auto] items-center gap-3 py-3 sm:grid-cols-[2.5rem_1fr_6rem_7rem]",
                       !filtrados && i >= PAGINA && "animate-rise",
@@ -490,7 +490,7 @@ export function RankingVendedores({
                   >
                     <span className={cn("flex items-center gap-1.5 font-display text-lg font-extrabold", corPosicao(pos - 1))}>
                       {pos}º
-                      {variacoes && <Variacao atual={pos} anterior={variacoes[v.vendedor]} />}
+                      {variacoes && <Variacao atual={pos} anterior={variacoes[`${v.vendedor}|${v.loja}`]} />}
                     </span>
                     <div className="flex min-w-0 items-center gap-3">
                       <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-bold">
