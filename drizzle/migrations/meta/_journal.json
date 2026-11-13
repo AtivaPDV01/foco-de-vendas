@@ -57,6 +57,13 @@
       "when": 1794277529709,
       "tag": "0007_ranking_snapshot_gerentes_whatsapp",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1794573223042,
+      "tag": "0008_ranking_por_vendedor_e_loja",
+      "breakpoints": true
     }
   ]
 }
