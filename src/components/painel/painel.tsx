@@ -490,7 +490,7 @@ export function RankingVendedores({
                   >
                     <span className={cn("flex items-center gap-1.5 font-display text-lg font-extrabold", corPosicao(pos - 1))}>
                       {pos}º
-                      {variacoes && <Variacao atual={pos} anterior={variacoes[`${v.vendedor}|${v.loja}`]} />}
+                      {variacoes && <Variacao atual={pos} anterior={(variacoes[`${v.vendedor}|${v.loja}`] ?? variacoes[v.vendedor])} />}
                     </span>
                     <div className="flex min-w-0 items-center gap-3">
                       <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-bold">

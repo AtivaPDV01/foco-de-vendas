@@ -269,7 +269,7 @@ function Extrato({ vendedor, mes, painel }: { vendedor: string; mes: string; pai
         qtd={qtd}
         comissao={comissao}
         posicao={extrato.posicao}
-        anterior={variacoes?.vendedores[vendedor]}
+        anterior={variacoes ? (variacoes.vendedores[vendedor] ?? Object.entries(variacoes.vendedores).find(([k]) => k.startsWith(`${vendedor}|`))?.[1]) : undefined}
       />
       <section className="surface glow ring-fire relative overflow-hidden p-6 md:p-8">
         <div className="bg-fire pointer-events-none absolute -right-16 -top-16 size-48 rounded-full opacity-20 blur-3xl" />
