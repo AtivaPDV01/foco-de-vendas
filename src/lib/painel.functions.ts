@@ -241,11 +241,16 @@ export type MetaLoja = { loja: string; quantidade: number };
 export const getMetasLoja = createServerFn({ method: "GET" })
   .inputValidator((input: { mes: string }) => z.object({ mes: z.string().regex(/^\d{4}-\d{2}$/) }).parse(input))
   .handler(async ({ data }): Promise<MetaLoja[]> => {
-    const { data: lista, error } = await clientePublico()
+    // A tabela não é pública: lê no servidor e devolve só loja + meta do mês pedido.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: lista, error } = await supabaseAdmin
       .from("metas_loja")
       .select("loja, quantidade")
       .eq("mes", `${data.mes}-01`);
-    if (error) throw new Error(error.message);
+    if (error) {
+      console.error("Falha ao ler metas das lojas:", error.message);
+      throw new Error("Não foi possível carregar as metas das lojas.");
+    }
     return lista ?? [];
   });
 
